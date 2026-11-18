@@ -1,0 +1,54 @@
+/**
+ * @fileoverview Accessible Data Table Primitive.
+ * Generates semantic table with caption, col-scoped headers, and cell rendering.
+ */
+
+/**
+ * Creates an accessible data table.
+ *
+ * @param {Object} options
+ * @param {string[]} options.headers - Column header titles
+ * @param {Array<Array<string | number | HTMLElement>>} options.rows - Row cell contents
+ * @param {string} [options.caption] - Table summary description
+ * @param {string} [options.className=""]
+ * @returns {HTMLTableElement}
+ */
+export function createDataTable({ headers, rows, caption, className = "" }) {
+  const table = document.createElement("table");
+  table.className = `ui-data-table ${className}`.trim();
+
+  if (caption) {
+    const cap = document.createElement("caption");
+    cap.textContent = caption;
+    table.appendChild(cap);
+  }
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  headers.forEach((h) => {
+    const th = document.createElement("th");
+    th.setAttribute("scope", "col");
+    th.textContent = h;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    row.forEach((cell) => {
+      const td = document.createElement("td");
+      if (cell instanceof HTMLElement) {
+        td.appendChild(cell);
+      } else {
+        td.textContent = cell !== undefined && cell !== null ? cell.toString() : "-";
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  return table;
+}
