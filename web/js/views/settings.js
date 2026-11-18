@@ -4,12 +4,7 @@
  * privacy explanations, and full data deletion with confirmation modal.
  */
 
-import {
-  loadProfile,
-  saveProfile,
-  clearProfile,
-  validateAndMigrateProfile,
-} from "../storage.js";
+import { loadProfile, saveProfile, clearProfile, validateAndMigrateProfile } from "../storage.js";
 import { createCard } from "../ui/card.js";
 import { createFormField } from "../ui/form-field.js";
 import { openModal } from "../ui/modal.js";
@@ -71,9 +66,18 @@ function triggerImportProfile() {
 function buildAboutCard() {
   const container = document.createElement("div");
   const paragraphs = [
-    { text: "Air quality forecast data is provided by CAMS ENSEMBLE via Open-Meteo under CC BY 4.0. Spatial resolution is ~25-45 km model estimate.", cls: "settings-text" },
-    { text: "Disclaimer: Saans estimates are for daily planning and low-emission routines, not medical advice or diagnosis. For severe respiratory symptoms, consult a healthcare provider.", cls: "settings-text text-muted" },
-    { text: "Privacy: Your household profile is stored strictly inside your browser's local storage. Only coarse flags are sent to the serverless engine when generating personalized day plans.", cls: "settings-text text-muted" },
+    {
+      text: "Air quality forecast data is provided by CAMS ENSEMBLE via Open-Meteo under CC BY 4.0. Spatial resolution is ~25-45 km model estimate.",
+      cls: "settings-text",
+    },
+    {
+      text: "Disclaimer: Saans estimates are for daily planning and low-emission routines, not medical advice or diagnosis. For severe respiratory symptoms, consult a healthcare provider.",
+      cls: "settings-text text-muted",
+    },
+    {
+      text: "Privacy: Your household profile is stored strictly inside your browser's local storage. Only coarse flags are sent to the serverless engine when generating personalized day plans.",
+      cls: "settings-text text-muted",
+    },
   ];
   paragraphs.forEach(({ text, cls }) => {
     const p = document.createElement("p");

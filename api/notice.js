@@ -12,10 +12,7 @@ import {
   sendError,
 } from "./_lib/security.js";
 import { generateGroundedContent } from "./_lib/gemini.js";
-import {
-  getCommunityChecklist,
-  createBaselineNotice,
-} from "../web/js/engine/community.js";
+import { getCommunityChecklist, createBaselineNotice } from "../web/js/engine/community.js";
 
 const NoticeSchema = z.object({
   communityType: z.enum(["rwa", "school", "mohalla"]),

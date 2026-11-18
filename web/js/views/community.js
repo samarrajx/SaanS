@@ -112,7 +112,11 @@ async function openNoticeDraftModal(type, category, profile) {
       tabs: [
         { id: "wa", label: "WhatsApp Text", render: () => buildChannelPanel(channels.whatsapp) },
         { id: "email", label: "Formal Email", render: () => buildChannelPanel(channels.email) },
-        { id: "board", label: "Notice Board", render: () => buildChannelPanel(channels.noticeBoard) },
+        {
+          id: "board",
+          label: "Notice Board",
+          render: () => buildChannelPanel(channels.noticeBoard),
+        },
       ],
     })
   );
