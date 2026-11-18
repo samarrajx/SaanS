@@ -184,10 +184,11 @@ Where $I_j$ is the microenvironment inhalation rate ($m^3/h$) based on exertion 
 
 All metrics below are generated directly by `npm run report` using Node.js built-in test runner (`node --test`) and code coverage tools.
 
-- **Node.js Version**: `v20.20.0`
+- **Node.js Version**: `v22.23.5`
 - **Total Tests**: `74`
 - **Passed**: `74`
 - **Failed**: `0`
+- **Aggregate Coverage**: Line: 94.30% | Branch: 79.15% | Function: 84.11%
 - **NPM Audit**: `0 vulnerabilities`
 - **TypeScript**: `0 errors` (`strict: true`, `checkJs: true`)
 - **ESLint**: `0 errors, 0 warnings` (Max 40 lines per function, max 250 lines per file)
@@ -202,12 +203,12 @@ All metrics below are generated directly by `npm run report` using Node.js built
 | `api/air.js`                   | 100.00%       | 68.00%          | 100.00%           |
 | `api/assist.js`                | 90.08%        | 35.29%          | 80.00%            |
 | `api/geocode.js`               | 95.60%        | 46.15%          | 100.00%           |
-| `api/notice.js`                | 91.92%        | 50.00%          | 100.00%           |
+| `api/notice.js`                | 91.67%        | 50.00%          | 100.00%           |
 | `api/ping.js`                  | 100.00%       | 100.00%         | 100.00%           |
-| `api/plan.js`                  | 93.75%        | 54.55%          | 100.00%           |
+| `api/plan.js`                  | 93.75%        | 57.14%          | 100.00%           |
 | `web/js/engine/actions.js`     | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/assumptions.js` | 100.00%       | 100.00%         | 100.00%           |
-| `web/js/engine/baseline.js`    | 94.03%        | 57.14%          | 100.00%           |
+| `web/js/engine/baseline.js`    | 95.52%        | 61.54%          | 100.00%           |
 | `web/js/engine/breakpoints.js` | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/community.js`   | 100.00%       | 66.67%          | 100.00%           |
 | `web/js/engine/exposure.js`    | 100.00%       | 94.44%          | 100.00%           |
@@ -224,12 +225,13 @@ All metrics below are generated directly by `npm run report` using Node.js built
 | `web/js/locales/en.js`         | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/locales/hi.js`         | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/locales/hinglish.js`   | 100.00%       | 100.00%         | 100.00%           |
+| `web/js/router.js`             | 49.40%        | 40.00%          | 9.09%             |
 | `web/js/storage.js`            | 84.35%        | 78.95%          | 75.00%            |
 | `web/js/ui/action-card.js`     | 81.25%        | 100.00%         | 50.00%            |
 | `web/js/ui/announcer.js`       | 100.00%       | 60.00%          | 100.00%           |
 | `web/js/ui/card.js`            | 89.29%        | 57.14%          | 100.00%           |
 | `web/js/ui/chart-line.js`      | 100.00%       | 64.71%          | 100.00%           |
-| `web/js/ui/chip.js`            | 94.64%        | 75.00%          | 100.00%           |
+| `web/js/ui/chip.js`            | 94.64%        | 85.71%          | 100.00%           |
 | `web/js/ui/data-table.js`      | 98.15%        | 71.43%          | 100.00%           |
 | `web/js/ui/form-field.js`      | 99.09%        | 78.57%          | 100.00%           |
 | `web/js/ui/inline-form.js`     | 100.00%       | 75.00%          | 100.00%           |
@@ -237,13 +239,14 @@ All metrics below are generated directly by `npm run report` using Node.js built
 | `web/js/ui/patch-diff.js`      | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/ui/tabs.js`            | 81.82%        | 91.67%          | 66.67%            |
 | `web/js/views/ask.js`          | 95.69%        | 85.71%          | 100.00%           |
-| `web/js/views/community.js`    | 92.58%        | 86.36%          | 76.19%            |
+| `web/js/views/community.js`    | 92.69%        | 86.36%          | 76.19%            |
 | `web/js/views/lab.js`          | 96.76%        | 75.00%          | 78.57%            |
 | `web/js/views/onboarding.js`   | 87.10%        | 100.00%         | 53.85%            |
 | `web/js/views/plan.js`         | 100.00%       | 100.00%         | 100.00%           |
-| `web/js/views/settings.js`     | 85.54%        | 92.31%          | 64.71%            |
+| `web/js/views/settings.js`     | 85.77%        | 92.31%          | 64.71%            |
 | `web/js/views/swaps.js`        | 98.83%        | 77.27%          | 93.33%            |
 | `web/js/views/today.js`        | 93.07%        | 93.33%          | 84.62%            |
+| **all files**                  | 94.30%        | 79.15%          | 84.11%            |
 
 ---
 
@@ -251,7 +254,7 @@ All metrics below are generated directly by `npm run report` using Node.js built
 
 ### Prerequisites
 
-- Node.js `v20.0.0` or higher (`v22.0.0+` recommended)
+- Node.js `>= 22.0.0`
 - Vercel CLI (optional, for local serverless execution)
 
 ### 1. Clone & Install
