@@ -49,38 +49,26 @@ class MockElement {
     };
   }
 
-  /**
-   * @param {string} name
-   * @param {string} val
-   */
+  /** @param {string} name @param {string} val */
   setAttribute(name, val) {
     this.attributes[name] = val.toString();
     if (name === "id") this.id = val.toString();
     if (name === "class") this.className = val.toString();
   }
 
-  /**
-   * @param {string} name
-   * @returns {string | null}
-   */
+  /** @param {string} name */
   getAttribute(name) {
     return this.attributes[name] || null;
   }
 
-  /**
-   * @param {MockElement} child
-   * @returns {MockElement}
-   */
+  /** @param {MockElement} child */
   appendChild(child) {
     child.parentNode = this;
     this.children.push(child);
     return child;
   }
 
-  /**
-   * @param {MockElement} newChild
-   * @param {MockElement | null} refChild
-   */
+  /** @param {MockElement} newChild @param {MockElement | null} refChild */
   insertBefore(newChild, refChild) {
     if (!refChild) return this.appendChild(newChild);
     const idx = this.children.indexOf(refChild);
@@ -90,9 +78,7 @@ class MockElement {
     return newChild;
   }
 
-  /**
-   * @param {MockElement} child
-   */
+  /** @param {MockElement} child */
   removeChild(child) {
     const idx = this.children.indexOf(child);
     if (idx !== -1) {
@@ -101,19 +87,13 @@ class MockElement {
     }
   }
 
-  /**
-   * @param {string} event
-   * @param {Function} handler
-   */
+  /** @param {string} event @param {Function} handler */
   addEventListener(event, handler) {
     if (!this.listeners[event]) this.listeners[event] = [];
     this.listeners[event].push(handler);
   }
 
-  /**
-   * @param {string} event
-   * @param {any} [data]
-   */
+  /** @param {string} event @param {any} [data] */
   dispatchEvent(event, data = {}) {
     if (this.listeners[event]) {
       const ev = {
@@ -190,11 +170,15 @@ function setupMockWindow() {
     removeEventListener: () => {},
   };
 
-  /** @type {any} */ (globalThis).navigator = {
-    clipboard: {
-      writeText: async () => {},
+  Object.defineProperty(globalThis, "navigator", {
+    value: {
+      clipboard: {
+        writeText: async () => {},
+      },
     },
-  };
+    configurable: true,
+    writable: true,
+  });
 
   /** @type {any} */ (globalThis).URL = {
     createObjectURL: () => "blob:mock-url",
