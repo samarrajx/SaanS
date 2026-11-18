@@ -173,3 +173,95 @@ test("POST /api/assist falls back cleanly on Gemini failure or malformed JSON", 
     setGeminiClient(null);
   }
 });
+
+test("characterisation: POST /api/assist bad method and forbidden origin (405, 403)", async () => {
+  // 405 Method Not Allowed
+  const getReq = createMockReq({ method: "GET", url: "/api/assist" });
+  const getRes = createMockRes();
+  await assistHandler(getReq, getRes);
+  assert.equal(getRes.statusCode, 405);
+  assert.equal(getRes.headers["Content-Type"], "application/json");
+  assert.equal(getRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(getRes.body), { error: "Method Not Allowed", status: 405 });
+
+  // 403 Forbidden Origin
+  const originReq = createMockReq({
+    method: "POST",
+    url: "/api/assist",
+    headers: { origin: "https://unauthorized.domain.org" },
+    body: { message: "Hello", profile: {}, language: "en" },
+  });
+  const originRes = createMockRes();
+  await assistHandler(originReq, originRes);
+  assert.equal(originRes.statusCode, 403);
+  assert.equal(originRes.headers["Content-Type"], "application/json");
+  assert.equal(originRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(originRes.body), { error: "Forbidden Origin", status: 403 });
+});
+
+test("characterisation: POST /api/assist oversize and validation error (413, 400)", async () => {
+  // 413 Payload Too Large
+  const oversizeReq = createMockReq({
+    method: "POST",
+    url: "/api/assist",
+    body: "x".repeat(33000),
+  });
+  const oversizeRes = createMockRes();
+  await assistHandler(oversizeReq, oversizeRes);
+  assert.equal(oversizeRes.statusCode, 413);
+  assert.equal(oversizeRes.headers["Content-Type"], "application/json");
+  assert.equal(oversizeRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(oversizeRes.body), { error: "Invalid JSON body", status: 413 });
+
+  // 400 Validation Error
+  const badReq = createMockReq({
+    method: "POST",
+    url: "/api/assist",
+    body: { message: "" },
+  });
+  const badRes = createMockRes();
+  await assistHandler(badReq, badRes);
+  assert.equal(badRes.statusCode, 400);
+  assert.equal(badRes.headers["Content-Type"], "application/json");
+  assert.equal(badRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(badRes.body), {
+    error: "Validation failed for assist input",
+    status: 400,
+  });
+});
+
+test("characterisation: POST /api/assist rate limit response (429)", async () => {
+  const ip = "192.0.2.203";
+  let rateRes = createMockRes();
+  for (let i = 0; i < 65; i++) {
+    const r = createMockReq({
+      method: "POST",
+      url: "/api/assist",
+      headers: { "x-forwarded-for": ip },
+      body: { message: "Test", profile: {}, language: "en" },
+    });
+    rateRes = createMockRes();
+    await assistHandler(r, rateRes);
+  }
+  assert.equal(rateRes.statusCode, 429);
+  assert.equal(rateRes.headers["Content-Type"], "application/json");
+  assert.equal(rateRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(rateRes.body), { error: "Too Many Requests", status: 429 });
+});
+
+test("characterisation: POST /api/assist success response (200)", async () => {
+  setGeminiClient(null);
+  const okReq = createMockReq({
+    method: "POST",
+    url: "/api/assist",
+    body: { message: "What can I do?", profile: {}, language: "en" },
+  });
+  const okRes = createMockRes();
+  await assistHandler(okReq, okRes);
+  assert.equal(okRes.statusCode, 200);
+  assert.equal(okRes.headers["Content-Type"], "application/json");
+  assert.equal(okRes.headers["Cache-Control"], "no-store");
+  const data = JSON.parse(okRes.body);
+  assert.ok(typeof data.reply === "string");
+  assert.equal(data.patch, null);
+});

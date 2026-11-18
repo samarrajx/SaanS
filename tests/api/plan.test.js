@@ -158,3 +158,124 @@ test("POST /api/plan adopts Gemini AI narrative when generated", async () => {
     setGeminiClient(null);
   }
 });
+
+test("characterisation: POST /api/plan bad method and forbidden origin (405, 403)", async () => {
+  // 405 Method Not Allowed
+  const getReq = createMockReq({ method: "GET", url: "/api/plan" });
+  const getRes = createMockRes();
+  await planHandler(getReq, getRes);
+  assert.equal(getRes.statusCode, 405);
+  assert.equal(getRes.headers["Content-Type"], "application/json");
+  assert.equal(getRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(getRes.body), { error: "Method Not Allowed", status: 405 });
+
+  // 403 Forbidden Origin
+  const originReq = createMockReq({
+    method: "POST",
+    url: "/api/plan",
+    headers: { origin: "https://unauthorized.domain.org" },
+    body: VALID_PLAN_PAYLOAD,
+  });
+  const originRes = createMockRes();
+  await planHandler(originReq, originRes);
+  assert.equal(originRes.statusCode, 403);
+  assert.equal(originRes.headers["Content-Type"], "application/json");
+  assert.equal(originRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(originRes.body), { error: "Forbidden Origin", status: 403 });
+});
+
+test("characterisation: POST /api/plan oversize and invalid payload (413, 400)", async () => {
+  // 413 Payload Too Large
+  const oversizeReq = createMockReq({
+    method: "POST",
+    url: "/api/plan",
+    body: "x".repeat(33000),
+  });
+  const oversizeRes = createMockRes();
+  await planHandler(oversizeReq, oversizeRes);
+  assert.equal(oversizeRes.statusCode, 413);
+  assert.equal(oversizeRes.headers["Content-Type"], "application/json");
+  assert.equal(oversizeRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(oversizeRes.body), { error: "Invalid JSON body", status: 413 });
+
+  // 400 Validation Error
+  const badReq = createMockReq({
+    method: "POST",
+    url: "/api/plan",
+    body: { location: { lat: 100 } },
+  });
+  const badRes = createMockRes();
+  await planHandler(badReq, badRes);
+  assert.equal(badRes.statusCode, 400);
+  assert.equal(badRes.headers["Content-Type"], "application/json");
+  assert.equal(badRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(badRes.body), {
+    error: "Validation failed for plan input",
+    status: 400,
+  });
+});
+
+test("characterisation: POST /api/plan rate limit response (429)", async () => {
+  const origFetch = globalThis.fetch;
+  /** @type {any} */ (globalThis).fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ hourly: { time: [], pm2_5: [], pm10: [] } }),
+  });
+  try {
+    const ip = "192.0.2.202";
+    let rateRes = createMockRes();
+    for (let i = 0; i < 65; i++) {
+      const r = createMockReq({
+        method: "POST",
+        url: "/api/plan",
+        headers: { "x-forwarded-for": ip },
+        body: VALID_PLAN_PAYLOAD,
+      });
+      rateRes = createMockRes();
+      await planHandler(r, rateRes);
+    }
+    assert.equal(rateRes.statusCode, 429);
+    assert.equal(rateRes.headers["Content-Type"], "application/json");
+    assert.equal(rateRes.headers["Cache-Control"], "no-store");
+    assert.deepEqual(JSON.parse(rateRes.body), { error: "Too Many Requests", status: 429 });
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test("characterisation: POST /api/plan success response (200)", async () => {
+  const origFetch = globalThis.fetch;
+  /** @type {any} */ (globalThis).fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      hourly: {
+        time: ["2026-11-18T00:00", "2026-11-18T01:00"],
+        pm2_5: [150, 160],
+        pm10: [250, 270],
+      },
+    }),
+  });
+  try {
+    const okReq = createMockReq({
+      method: "POST",
+      url: "/api/plan",
+      body: VALID_PLAN_PAYLOAD,
+    });
+    const okRes = createMockRes();
+    await planHandler(okReq, okRes);
+    assert.equal(okRes.statusCode, 200);
+    assert.equal(okRes.headers["Content-Type"], "application/json");
+    assert.equal(okRes.headers["Cache-Control"], "no-store");
+    const data = JSON.parse(okRes.body);
+    assert.ok(typeof data.summary === "string");
+    assert.ok(typeof data.headlineNAQI === "object");
+    assert.ok(Array.isArray(data.dayPlan));
+    assert.ok(Array.isArray(data.topActions));
+    assert.ok(typeof data.caveat === "string");
+    assert.ok(typeof data.airMeta === "object");
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});

@@ -141,3 +141,96 @@ test("POST /api/notice adopts AI crafted circular when Gemini succeeds", async (
     setGeminiClient(null);
   }
 });
+
+test("characterisation: POST /api/notice bad method and forbidden origin (405, 403)", async () => {
+  // 405 Method Not Allowed
+  const getReq = createMockReq({ method: "GET", url: "/api/notice" });
+  const getRes = createMockRes();
+  await noticeHandler(getReq, getRes);
+  assert.equal(getRes.statusCode, 405);
+  assert.equal(getRes.headers["Content-Type"], "application/json");
+  assert.equal(getRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(getRes.body), { error: "Method Not Allowed", status: 405 });
+
+  // 403 Forbidden Origin
+  const originReq = createMockReq({
+    method: "POST",
+    url: "/api/notice",
+    headers: { origin: "https://unauthorized.domain.org" },
+    body: VALID_NOTICE_PAYLOAD,
+  });
+  const originRes = createMockRes();
+  await noticeHandler(originReq, originRes);
+  assert.equal(originRes.statusCode, 403);
+  assert.equal(originRes.headers["Content-Type"], "application/json");
+  assert.equal(originRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(originRes.body), { error: "Forbidden Origin", status: 403 });
+});
+
+test("characterisation: POST /api/notice oversize and validation error (413, 400)", async () => {
+  // 413 Payload Too Large
+  const oversizeReq = createMockReq({
+    method: "POST",
+    url: "/api/notice",
+    body: "x".repeat(33000),
+  });
+  const oversizeRes = createMockRes();
+  await noticeHandler(oversizeReq, oversizeRes);
+  assert.equal(oversizeRes.statusCode, 413);
+  assert.equal(oversizeRes.headers["Content-Type"], "application/json");
+  assert.equal(oversizeRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(oversizeRes.body), { error: "Invalid JSON body", status: 413 });
+
+  // 400 Validation Error
+  const badReq = createMockReq({
+    method: "POST",
+    url: "/api/notice",
+    body: { communityType: "invalidType", category: "Severe" },
+  });
+  const badRes = createMockRes();
+  await noticeHandler(badReq, badRes);
+  assert.equal(badRes.statusCode, 400);
+  assert.equal(badRes.headers["Content-Type"], "application/json");
+  assert.equal(badRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(badRes.body), {
+    error: "Validation failed for notice input",
+    status: 400,
+  });
+});
+
+test("characterisation: POST /api/notice rate limit response (429)", async () => {
+  const ip = "192.0.2.204";
+  let rateRes = createMockRes();
+  for (let i = 0; i < 65; i++) {
+    const r = createMockReq({
+      method: "POST",
+      url: "/api/notice",
+      headers: { "x-forwarded-for": ip },
+      body: VALID_NOTICE_PAYLOAD,
+    });
+    rateRes = createMockRes();
+    await noticeHandler(r, rateRes);
+  }
+  assert.equal(rateRes.statusCode, 429);
+  assert.equal(rateRes.headers["Content-Type"], "application/json");
+  assert.equal(rateRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(rateRes.body), { error: "Too Many Requests", status: 429 });
+});
+
+test("characterisation: POST /api/notice success response (200)", async () => {
+  setGeminiClient(null);
+  const okReq = createMockReq({
+    method: "POST",
+    url: "/api/notice",
+    body: VALID_NOTICE_PAYLOAD,
+  });
+  const okRes = createMockRes();
+  await noticeHandler(okReq, okRes);
+  assert.equal(okRes.statusCode, 200);
+  assert.equal(okRes.headers["Content-Type"], "application/json");
+  assert.equal(okRes.headers["Cache-Control"], "no-store");
+  const data = JSON.parse(okRes.body);
+  assert.ok(typeof data.whatsapp === "string");
+  assert.ok(typeof data.email === "string");
+  assert.ok(typeof data.noticeBoard === "string");
+});

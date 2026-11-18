@@ -130,3 +130,124 @@ test("GET /api/air validates coordinate boundary limits and handles non-numeric 
     globalThis.fetch = originalFetch;
   }
 });
+
+test("characterisation: GET /api/air error responses (405, 403, 400)", async () => {
+  // 405 Method Not Allowed
+  const postReq = createMockReq({ method: "POST", url: "/api/air?lat=25.59&lon=85.14" });
+  const postRes = createMockRes();
+  await airHandler(postReq, postRes);
+  assert.equal(postRes.statusCode, 405);
+  assert.equal(postRes.headers["Content-Type"], "application/json");
+  assert.equal(postRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(postRes.body), { error: "Method Not Allowed", status: 405 });
+
+  // 403 Forbidden Origin
+  const originReq = createMockReq({
+    url: "/api/air?lat=25.59&lon=85.14",
+    headers: { origin: "https://unauthorized.domain.org" },
+  });
+  const originRes = createMockRes();
+  await airHandler(originReq, originRes);
+  assert.equal(originRes.statusCode, 403);
+  assert.equal(originRes.headers["Content-Type"], "application/json");
+  assert.equal(originRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(originRes.body), { error: "Forbidden Origin", status: 403 });
+
+  // 400 Bad Request
+  const badReq = createMockReq({ url: "/api/air?lat=120&lon=85.14" });
+  const badRes = createMockRes();
+  await airHandler(badReq, badRes);
+  assert.equal(badRes.statusCode, 400);
+  assert.equal(badRes.headers["Content-Type"], "application/json");
+  assert.equal(badRes.headers["Cache-Control"], "no-store");
+  assert.deepEqual(JSON.parse(badRes.body), {
+    error: "Invalid coordinates. Latitude must be [-90, 90], longitude [-180, 180]",
+    status: 400,
+  });
+});
+
+test("characterisation: GET /api/air rate limit response (429)", async () => {
+  cache.clear();
+  const origFetch = globalThis.fetch;
+  /** @type {any} */ (globalThis).fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ hourly: { time: [], pm2_5: [], pm10: [] } }),
+  });
+  try {
+    const ip = "192.0.2.199";
+    let rateRes = createMockRes();
+    for (let i = 0; i < 65; i++) {
+      const r = createMockReq({
+        url: "/api/air?lat=25.59&lon=85.14",
+        headers: { "x-forwarded-for": ip },
+      });
+      rateRes = createMockRes();
+      await airHandler(r, rateRes);
+    }
+    assert.equal(rateRes.statusCode, 429);
+    assert.equal(rateRes.headers["Content-Type"], "application/json");
+    assert.equal(rateRes.headers["Cache-Control"], "no-store");
+    assert.deepEqual(JSON.parse(rateRes.body), { error: "Too Many Requests", status: 429 });
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test("characterisation: GET /api/air cache MISS and HIT (200)", async () => {
+  cache.clear();
+  const origFetch = globalThis.fetch;
+  /** @type {any} */ (globalThis).fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      hourly: {
+        time: ["2026-11-18T00:00"],
+        pm2_5: [150.2],
+        pm10: [250.4],
+      },
+    }),
+  });
+
+  try {
+    const okReq1 = createMockReq({ url: "/api/air?lat=25.59&lon=85.14" });
+    const okRes1 = createMockRes();
+    await airHandler(okReq1, okRes1);
+    assert.equal(okRes1.statusCode, 200);
+    assert.equal(okRes1.headers["Content-Type"], "application/json");
+    assert.equal(okRes1.headers["Cache-Control"], "public, max-age=1800");
+    assert.equal(okRes1.headers["X-Cache"], "MISS");
+    const body1 = JSON.parse(okRes1.body);
+    assert.deepEqual(body1.times, ["2026-11-18T00:00"]);
+    assert.deepEqual(body1.pm25, [150.2]);
+    assert.deepEqual(body1.pm10, [250.4]);
+
+    const okReq2 = createMockReq({ url: "/api/air?lat=25.59&lon=85.14" });
+    const okRes2 = createMockRes();
+    await airHandler(okReq2, okRes2);
+    assert.equal(okRes2.statusCode, 200);
+    assert.equal(okRes2.headers["X-Cache"], "HIT");
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test("characterisation: GET /api/air upstream failure (502)", async () => {
+  cache.clear();
+  const origFetch = globalThis.fetch;
+  /** @type {any} */ (globalThis).fetch = async () => ({ ok: false, status: 500 });
+  try {
+    const failReq = createMockReq({ url: "/api/air?lat=25.59&lon=85.14" });
+    const failRes = createMockRes();
+    await airHandler(failReq, failRes);
+    assert.equal(failRes.statusCode, 502);
+    assert.equal(failRes.headers["Content-Type"], "application/json");
+    assert.equal(failRes.headers["Cache-Control"], "no-store");
+    assert.deepEqual(JSON.parse(failRes.body), {
+      error: "Failed to retrieve upstream air quality data",
+      status: 502,
+    });
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});

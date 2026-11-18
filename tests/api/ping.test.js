@@ -62,3 +62,26 @@ test("POST /api/ping returns 405 Method Not Allowed", () => {
   const parsed = JSON.parse(res.body);
   assert.equal(parsed.error, "Method Not Allowed");
 });
+
+test("characterisation: /api/ping exact headers and response shapes", () => {
+  const getReq = createMockReq("GET");
+  const getRes = createMockRes();
+  pingHandler(getReq, getRes);
+
+  assert.equal(getRes.statusCode, 200);
+  assert.equal(getRes.headers["Content-Type"], "application/json");
+  assert.equal(getRes.headers["Cache-Control"], "no-store");
+  const getBody = JSON.parse(getRes.body);
+  assert.equal(getBody.status, "ok");
+  assert.equal(getBody.app, "Saans");
+  assert.ok(typeof getBody.timestamp === "string");
+
+  const postReq = createMockReq("POST");
+  const postRes = createMockRes();
+  pingHandler(postReq, postRes);
+
+  assert.equal(postRes.statusCode, 405);
+  assert.equal(postRes.headers["Allow"], "GET");
+  assert.equal(postRes.headers["Content-Type"], "application/json");
+  assert.deepEqual(JSON.parse(postRes.body), { error: "Method Not Allowed" });
+});
