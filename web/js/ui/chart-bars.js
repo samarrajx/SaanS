@@ -4,9 +4,22 @@
  */
 
 import { createDataTable } from "./data-table.js";
+import { createChartContainer, SVG_NS } from "./chart-utils.js";
 
-const BAR_HEIGHT = 28; // Height per bar in px
-const CHART_WIDTH = 450; // Reference SVG coordinate width
+const BAR_HEIGHT = 28; // Height per bar in coordinate pixels
+const BAR_GAP = 12; // Gap between consecutive horizontal bars
+const TOP_PADDING = 10; // Top coordinate padding
+const BOTTOM_PADDING = 20; // Bottom coordinate padding
+const CHART_WIDTH = 450; // Reference SVG coordinate width (viewBox)
+const BAR_START_X = 120; // Horizontal start offset for bar rectangle
+const VALUE_START_OFFSET = 10; // Spacing after bar for value text
+const LABEL_TEXT_Y_OFFSET = 18; // Vertical baseline offset for label text
+const LABEL_RESERVED_WIDTH = 140; // Total horizontal space reserved for labels & margins
+const MIN_BAR_WIDTH = 4; // Minimum visible bar width
+const CORNER_RADIUS = "4"; // Border radius for bar rectangle
+const DEFAULT_BAR_COLOR = "#0f766e"; // Default teal bar color
+const LABEL_FONT_SIZE = "12"; // Font size for item label
+const VALUE_FONT_SIZE = "11"; // Font size for metric value
 
 /**
  * @typedef {Object} BarChartItem
@@ -29,37 +42,40 @@ const CHART_WIDTH = 450; // Reference SVG coordinate width
  */
 function renderBarSvg(items) {
   const maxVal = Math.max(1, ...items.map((i) => i.value));
-  const svgHeight = items.length * (BAR_HEIGHT + 12) + 20;
+  const svgHeight = items.length * (BAR_HEIGHT + BAR_GAP) + BOTTOM_PADDING;
 
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${CHART_WIDTH} ${svgHeight}`);
   svg.setAttribute("class", "ui-barchart-svg");
   svg.setAttribute("role", "img");
 
   items.forEach((item, index) => {
-    const y = index * (BAR_HEIGHT + 12) + 10;
-    const barWidth = Math.max(4, Math.round((item.value / maxVal) * (CHART_WIDTH - 140)));
+    const y = index * (BAR_HEIGHT + BAR_GAP) + TOP_PADDING;
+    const barWidth = Math.max(
+      MIN_BAR_WIDTH,
+      Math.round((item.value / maxVal) * (CHART_WIDTH - LABEL_RESERVED_WIDTH))
+    );
 
-    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    const text = document.createElementNS(SVG_NS, "text");
     text.setAttribute("x", "0");
-    text.setAttribute("y", (y + 18).toString());
-    text.setAttribute("font-size", "12");
+    text.setAttribute("y", (y + LABEL_TEXT_Y_OFFSET).toString());
+    text.setAttribute("font-size", LABEL_FONT_SIZE);
     text.textContent = item.label;
     svg.appendChild(text);
 
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("x", "120");
+    const rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("x", BAR_START_X.toString());
     rect.setAttribute("y", y.toString());
     rect.setAttribute("width", barWidth.toString());
     rect.setAttribute("height", BAR_HEIGHT.toString());
-    rect.setAttribute("rx", "4");
-    rect.setAttribute("fill", item.color || "#0f766e");
+    rect.setAttribute("rx", CORNER_RADIUS);
+    rect.setAttribute("fill", item.color || DEFAULT_BAR_COLOR);
     svg.appendChild(rect);
 
-    const valText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    valText.setAttribute("x", (130 + barWidth).toString());
-    valText.setAttribute("y", (y + 18).toString());
-    valText.setAttribute("font-size", "11");
+    const valText = document.createElementNS(SVG_NS, "text");
+    valText.setAttribute("x", (BAR_START_X + VALUE_START_OFFSET + barWidth).toString());
+    valText.setAttribute("y", (y + LABEL_TEXT_Y_OFFSET).toString());
+    valText.setAttribute("font-size", VALUE_FONT_SIZE);
     valText.textContent = `${item.value} ${item.unit || ""}`.trim();
     svg.appendChild(valText);
   });
@@ -74,27 +90,7 @@ function renderBarSvg(items) {
  * @returns {HTMLDivElement}
  */
 export function createBarChart({ title, data }) {
-  const container = document.createElement("div");
-  container.className = "ui-chart-container";
-
-  const header = document.createElement("div");
-  header.className = "chart-header";
-  const h3 = document.createElement("h3");
-  h3.textContent = title;
-  header.appendChild(h3);
-
-  const toggleBtn = document.createElement("button");
-  toggleBtn.type = "button";
-  toggleBtn.className = "ui-button secondary chart-toggle-btn";
-  toggleBtn.textContent = "View Table";
-  header.appendChild(toggleBtn);
-  container.appendChild(header);
-
-  const svgWrap = document.createElement("div");
-  svgWrap.className = "chart-svg-wrap";
-  svgWrap.appendChild(renderBarSvg(data));
-  container.appendChild(svgWrap);
-
+  const svg = renderBarSvg(data);
   const tableHeaders = ["Item", "Value"];
   const tableRows = data.map((d) => [d.label, `${d.value} ${d.unit || ""}`.trim()]);
   const table = createDataTable({
@@ -102,16 +98,10 @@ export function createBarChart({ title, data }) {
     rows: tableRows,
     caption: `${title} Table`,
   });
-  table.style.display = "none";
-  container.appendChild(table);
 
-  let isTableView = false;
-  toggleBtn.addEventListener("click", () => {
-    isTableView = !isTableView;
-    svgWrap.style.display = isTableView ? "none" : "block";
-    table.style.display = isTableView ? "table" : "none";
-    toggleBtn.textContent = isTableView ? "View Chart" : "View Table";
+  return createChartContainer({
+    title,
+    svg,
+    table,
   });
-
-  return container;
 }

@@ -4,11 +4,15 @@
  */
 
 import { createDataTable } from "./data-table.js";
+import { createChartContainer, SVG_NS } from "./chart-utils.js";
 
-const SVG_WIDTH = 600; // Reference coordinate width
-const SVG_HEIGHT = 240; // Reference coordinate height
-const PADDING_X = 40; // Horizontal axis padding
-const PADDING_Y = 30; // Vertical axis padding
+const SVG_WIDTH = 600; // Reference coordinate viewBox width
+const SVG_HEIGHT = 240; // Reference coordinate viewBox height
+const PADDING_X = 40; // Horizontal axis padding in coordinate units
+const PADDING_Y = 30; // Vertical axis padding in coordinate units
+const MIN_SCALE_MAX = 10; // Floor for maximum value on vertical scale
+const STROKE_WIDTH = "2.5"; // Vector polyline stroke thickness
+const GRID_COLOR = "#e2e8f0"; // Reference horizontal grid line color
 
 /**
  * Computes SVG polyline points string from numeric array.
@@ -55,27 +59,27 @@ function buildPoints(values, minVal, maxVal) {
 function renderSvg(series, _labels) {
   const allVals = series.flatMap((s) => s.values);
   const minVal = Math.min(0, ...allVals);
-  const maxVal = Math.max(10, ...allVals);
+  const maxVal = Math.max(MIN_SCALE_MAX, ...allVals);
 
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`);
   svg.setAttribute("class", "ui-chart-svg");
   svg.setAttribute("role", "img");
 
   // Grid line at mid
-  const midLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  const midLine = document.createElementNS(SVG_NS, "line");
   midLine.setAttribute("x1", PADDING_X.toString());
   midLine.setAttribute("x2", (SVG_WIDTH - PADDING_X).toString());
   midLine.setAttribute("y1", (SVG_HEIGHT / 2).toString());
   midLine.setAttribute("y2", (SVG_HEIGHT / 2).toString());
-  midLine.setAttribute("stroke", "#e2e8f0");
+  midLine.setAttribute("stroke", GRID_COLOR);
   svg.appendChild(midLine);
 
   series.forEach((s) => {
-    const poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    const poly = document.createElementNS(SVG_NS, "polyline");
     poly.setAttribute("fill", "none");
     poly.setAttribute("stroke", s.color);
-    poly.setAttribute("stroke-width", "2.5");
+    poly.setAttribute("stroke-width", STROKE_WIDTH);
     poly.setAttribute("points", buildPoints(s.values, minVal, maxVal));
     svg.appendChild(poly);
   });
@@ -90,26 +94,8 @@ function renderSvg(series, _labels) {
  * @returns {HTMLDivElement}
  */
 export function createLineChart({ title, series, labels, unit = "µg/m³" }) {
-  const container = document.createElement("div");
-  container.className = "ui-chart-container";
-
-  const header = document.createElement("div");
-  header.className = "chart-header";
-  const h3 = document.createElement("h3");
-  h3.textContent = `${title} (${unit})`;
-  header.appendChild(h3);
-
-  const toggleBtn = document.createElement("button");
-  toggleBtn.type = "button";
-  toggleBtn.className = "ui-button secondary chart-toggle-btn";
-  toggleBtn.textContent = "View Table";
-  header.appendChild(toggleBtn);
-  container.appendChild(header);
-
-  const svgWrap = document.createElement("div");
-  svgWrap.className = "chart-svg-wrap";
-  svgWrap.appendChild(renderSvg(series, labels));
-  container.appendChild(svgWrap);
+  const chartTitle = `${title} (${unit})`;
+  const svg = renderSvg(series, labels);
 
   // Accessible Table equivalent
   const tableHeaders = ["Time", ...series.map((s) => s.name)];
@@ -122,16 +108,10 @@ export function createLineChart({ title, series, labels, unit = "µg/m³" }) {
     rows: tableRows,
     caption: `${title} Data Table`,
   });
-  table.style.display = "none";
-  container.appendChild(table);
 
-  let isTableView = false;
-  toggleBtn.addEventListener("click", () => {
-    isTableView = !isTableView;
-    svgWrap.style.display = isTableView ? "none" : "block";
-    table.style.display = isTableView ? "table" : "none";
-    toggleBtn.textContent = isTableView ? "View Chart" : "View Table";
+  return createChartContainer({
+    title: chartTitle,
+    svg,
+    table,
   });
-
-  return container;
 }
