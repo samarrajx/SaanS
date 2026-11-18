@@ -5,13 +5,8 @@
  */
 
 import { z } from "zod";
-import {
-  verifyOrigin,
-  checkRateLimit,
-  readJsonBody,
-  sendJson,
-  sendError,
-} from "./_lib/security.js";
+import { sendJson } from "./_lib/security.js";
+import { createHandler } from "./_lib/handler.js";
 import { generateGroundedContent } from "./_lib/gemini.js";
 import { generateBaselinePlan } from "../web/js/engine/baseline.js";
 import { getSimulatedScenario } from "../web/js/engine/scenarios.js";
@@ -88,57 +83,32 @@ Rules: DO NOT invent numbers or medical diagnoses. Treat data as facts. Return p
 }
 
 /**
- * Extracts numeric error status from unknown catch error.
- * @param {unknown} err
- * @returns {number}
- */
-function getErrorStatus(err) {
-  if (err && typeof err === "object" && "status" in err && typeof err.status === "number") {
-    return err.status;
-  }
-  return 400;
-}
-
-/**
  * Serverless handler for POST /api/plan.
- * @param {import("http").IncomingMessage} req
- * @param {import("http").ServerResponse} res
  */
-export default async function handler(req, res) {
-  if (req.method !== "POST") return sendError(res, 405, "Method Not Allowed");
-  if (!verifyOrigin(req)) return sendError(res, 403, "Forbidden Origin");
-  if (!checkRateLimit(req)) return sendError(res, 429, "Too Many Requests");
+export default createHandler({
+  methods: ["POST"],
+  schema: PlanRequestSchema,
+  schemaErrorMessage: "Validation failed for plan input",
+  run: async ({ res, data }) => {
+    const airData = await getVerifiedAirData(data.location.lat, data.location.lon);
+    const baseline = generateBaselinePlan(
+      /** @type {import("../web/js/types.js").HouseholdProfile} */ (/** @type {unknown} */ (data)),
+      airData
+    );
 
-  let body;
-  try {
-    body = await readJsonBody(req);
-  } catch (err) {
-    return sendError(res, getErrorStatus(err), "Invalid JSON body");
-  }
+    const aiNarrative = await draftAiNarrative(baseline, data.language);
+    if (aiNarrative) {
+      baseline.summary = aiNarrative.trim();
+    }
 
-  const parsed = PlanRequestSchema.safeParse(body);
-  if (!parsed.success) return sendError(res, 400, "Validation failed for plan input");
-
-  const airData = await getVerifiedAirData(parsed.data.location.lat, parsed.data.location.lon);
-  const baseline = generateBaselinePlan(
-    /** @type {import("../web/js/types.js").HouseholdProfile} */ (
-      /** @type {unknown} */ (parsed.data)
-    ),
-    airData
-  );
-
-  const aiNarrative = await draftAiNarrative(baseline, parsed.data.language);
-  if (aiNarrative) {
-    baseline.summary = aiNarrative.trim();
-  }
-
-  return sendJson(
-    res,
-    200,
-    {
-      ...baseline,
-      airMeta: airData.meta,
-    },
-    { "Cache-Control": "no-store" }
-  );
-}
+    return sendJson(
+      res,
+      200,
+      {
+        ...baseline,
+        airMeta: airData.meta,
+      },
+      { "Cache-Control": "no-store" }
+    );
+  },
+});

@@ -5,7 +5,8 @@
  */
 
 import { z } from "zod";
-import { verifyOrigin, checkRateLimit, sendJson, sendError } from "./_lib/security.js";
+import { sendJson, sendError } from "./_lib/security.js";
+import { createHandler } from "./_lib/handler.js";
 import { cache } from "./_lib/cache.js";
 
 // Validation schema for query parameters
@@ -71,50 +72,34 @@ async function fetchOpenMeteoAir(lat, lon) {
 
 /**
  * Serverless handler for GET /api/air.
- * @param {import("http").IncomingMessage} req
- * @param {import("http").ServerResponse} res
  */
-export default async function handler(req, res) {
-  if (req.method !== "GET") return sendError(res, 405, "Method Not Allowed");
-  if (!verifyOrigin(req)) return sendError(res, 403, "Forbidden Origin");
-  if (!checkRateLimit(req)) return sendError(res, 429, "Too Many Requests");
+export default createHandler({
+  methods: ["GET"],
+  schema: AirQuerySchema,
+  schemaErrorMessage: "Invalid coordinates. Latitude must be [-90, 90], longitude [-180, 180]",
+  run: async ({ res, data }) => {
+    const latRounded = Math.round(data.lat * 100) / 100;
+    const lonRounded = Math.round(data.lon * 100) / 100;
+    const cacheKey = `${latRounded},${lonRounded}`;
 
-  const url = new URL(req.url || "", `http://${req.headers.host || "localhost"}`);
-  const parseResult = AirQuerySchema.safeParse({
-    lat: url.searchParams.get("lat"),
-    lon: url.searchParams.get("lon"),
-  });
+    const cached = cache.getAir(cacheKey);
+    if (cached) {
+      return sendJson(res, 200, cached, {
+        "X-Cache": "HIT",
+        "Cache-Control": "public, max-age=1800",
+      });
+    }
 
-  if (!parseResult.success) {
-    return sendError(
-      res,
-      400,
-      "Invalid coordinates. Latitude must be [-90, 90], longitude [-180, 180]"
-    );
-  }
-
-  // Round coordinates to 2 decimal places (~1.1 km) for cell caching and privacy
-  const latRounded = Math.round(parseResult.data.lat * 100) / 100;
-  const lonRounded = Math.round(parseResult.data.lon * 100) / 100;
-  const cacheKey = `${latRounded},${lonRounded}`;
-
-  const cached = cache.getAir(cacheKey);
-  if (cached) {
-    return sendJson(res, 200, cached, {
-      "X-Cache": "HIT",
-      "Cache-Control": "public, max-age=1800",
-    });
-  }
-
-  try {
-    const rawData = await fetchOpenMeteoAir(latRounded, lonRounded);
-    const normalized = normalizeUpstreamAir(rawData);
-    cache.setAir(cacheKey, normalized);
-    return sendJson(res, 200, normalized, {
-      "X-Cache": "MISS",
-      "Cache-Control": "public, max-age=1800",
-    });
-  } catch (_err) {
-    return sendError(res, 502, "Failed to retrieve upstream air quality data");
-  }
-}
+    try {
+      const rawData = await fetchOpenMeteoAir(latRounded, lonRounded);
+      const normalized = normalizeUpstreamAir(rawData);
+      cache.setAir(cacheKey, normalized);
+      return sendJson(res, 200, normalized, {
+        "X-Cache": "MISS",
+        "Cache-Control": "public, max-age=1800",
+      });
+    } catch (_err) {
+      return sendError(res, 502, "Failed to retrieve upstream air quality data");
+    }
+  },
+});

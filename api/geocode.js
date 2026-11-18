@@ -4,7 +4,8 @@
  */
 
 import { z } from "zod";
-import { verifyOrigin, checkRateLimit, sendJson, sendError } from "./_lib/security.js";
+import { sendJson, sendError } from "./_lib/security.js";
+import { createHandler } from "./_lib/handler.js";
 import { cache } from "./_lib/cache.js";
 
 const GeocodeQuerySchema = z.object({
@@ -58,39 +59,31 @@ async function fetchOpenMeteoGeocode(query) {
 
 /**
  * Serverless handler for GET /api/geocode.
- * @param {import("http").IncomingMessage} req
- * @param {import("http").ServerResponse} res
  */
-export default async function handler(req, res) {
-  if (req.method !== "GET") return sendError(res, 405, "Method Not Allowed");
-  if (!verifyOrigin(req)) return sendError(res, 403, "Forbidden Origin");
-  if (!checkRateLimit(req)) return sendError(res, 429, "Too Many Requests");
+export default createHandler({
+  methods: ["GET"],
+  schema: GeocodeQuerySchema,
+  schemaErrorMessage: "Query parameter 'q' must be between 2 and 80 characters",
+  run: async ({ res, data }) => {
+    const queryKey = data.q.toLowerCase();
+    const cached = cache.getGeocode(queryKey);
+    if (cached) {
+      return sendJson(res, 200, cached, {
+        "X-Cache": "HIT",
+        "Cache-Control": "public, max-age=86400",
+      });
+    }
 
-  const url = new URL(req.url || "", `http://${req.headers.host || "localhost"}`);
-  const parseResult = GeocodeQuerySchema.safeParse({ q: url.searchParams.get("q") });
-
-  if (!parseResult.success) {
-    return sendError(res, 400, "Query parameter 'q' must be between 2 and 80 characters");
-  }
-
-  const queryKey = parseResult.data.q.toLowerCase();
-  const cached = cache.getGeocode(queryKey);
-  if (cached) {
-    return sendJson(res, 200, cached, {
-      "X-Cache": "HIT",
-      "Cache-Control": "public, max-age=86400",
-    });
-  }
-
-  try {
-    const rawData = await fetchOpenMeteoGeocode(queryKey);
-    const normalized = normalizeGeocodeResults(rawData);
-    cache.setGeocode(queryKey, normalized);
-    return sendJson(res, 200, normalized, {
-      "X-Cache": "MISS",
-      "Cache-Control": "public, max-age=86400",
-    });
-  } catch (_err) {
-    return sendError(res, 502, "Failed to retrieve location search results");
-  }
-}
+    try {
+      const rawData = await fetchOpenMeteoGeocode(queryKey);
+      const normalized = normalizeGeocodeResults(rawData);
+      cache.setGeocode(queryKey, normalized);
+      return sendJson(res, 200, normalized, {
+        "X-Cache": "MISS",
+        "Cache-Control": "public, max-age=86400",
+      });
+    } catch (_err) {
+      return sendError(res, 502, "Failed to retrieve location search results");
+    }
+  },
+});

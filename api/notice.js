@@ -4,13 +4,8 @@
  */
 
 import { z } from "zod";
-import {
-  verifyOrigin,
-  checkRateLimit,
-  readJsonBody,
-  sendJson,
-  sendError,
-} from "./_lib/security.js";
+import { sendJson } from "./_lib/security.js";
+import { createHandler } from "./_lib/handler.js";
 import { generateGroundedContent } from "./_lib/gemini.js";
 import { getCommunityChecklist, createBaselineNotice } from "../web/js/engine/community.js";
 
@@ -58,50 +53,23 @@ Return JSON with exact keys:
 }
 
 /**
- * Extracts numeric error status from unknown catch error.
- * @param {unknown} err
- * @returns {number}
- */
-function getErrorStatus(err) {
-  if (err && typeof err === "object" && "status" in err && typeof err.status === "number") {
-    return err.status;
-  }
-  return 400;
-}
-
-/**
  * Serverless handler for POST /api/notice.
- * @param {import("http").IncomingMessage} req
- * @param {import("http").ServerResponse} res
  */
-export default async function handler(req, res) {
-  if (req.method !== "POST") return sendError(res, 405, "Method Not Allowed");
-  if (!verifyOrigin(req)) return sendError(res, 403, "Forbidden Origin");
-  if (!checkRateLimit(req)) return sendError(res, 429, "Too Many Requests");
+export default createHandler({
+  methods: ["POST"],
+  schema: NoticeSchema,
+  schemaErrorMessage: "Validation failed for notice input",
+  run: async ({ res, data }) => {
+    const checklist = getCommunityChecklist(data.communityType, data.category);
+    const baselineNotice = createBaselineNotice(data.communityType, data.category, checklist);
 
-  let body;
-  try {
-    body = await readJsonBody(req);
-  } catch (err) {
-    return sendError(res, getErrorStatus(err), "Invalid JSON body");
-  }
+    const aiNotice = await draftAiNotice(
+      data.communityType,
+      data.category,
+      checklist,
+      data.language
+    );
 
-  const parsed = NoticeSchema.safeParse(body);
-  if (!parsed.success) return sendError(res, 400, "Validation failed for notice input");
-
-  const checklist = getCommunityChecklist(parsed.data.communityType, parsed.data.category);
-  const baselineNotice = createBaselineNotice(
-    parsed.data.communityType,
-    parsed.data.category,
-    checklist
-  );
-
-  const aiNotice = await draftAiNotice(
-    parsed.data.communityType,
-    parsed.data.category,
-    checklist,
-    parsed.data.language
-  );
-
-  return sendJson(res, 200, aiNotice || baselineNotice, { "Cache-Control": "no-store" });
-}
+    return sendJson(res, 200, aiNotice || baselineNotice, { "Cache-Control": "no-store" });
+  },
+});

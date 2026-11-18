@@ -4,13 +4,8 @@
  */
 
 import { z } from "zod";
-import {
-  verifyOrigin,
-  checkRateLimit,
-  readJsonBody,
-  sendJson,
-  sendError,
-} from "./_lib/security.js";
+import { sendJson } from "./_lib/security.js";
+import { createHandler } from "./_lib/handler.js";
 import { generateGroundedContent } from "./_lib/gemini.js";
 import { ALLOWLISTED_OPERATIONS } from "../web/js/engine/patch.js";
 
@@ -104,41 +99,14 @@ Output JSON schema: { "reply": "string", "patch": { "op": "string", "value": "st
 }
 
 /**
- * Extracts numeric error status from unknown catch error.
- * @param {unknown} err
- * @returns {number}
- */
-function getErrorStatus(err) {
-  if (err && typeof err === "object" && "status" in err && typeof err.status === "number") {
-    return err.status;
-  }
-  return 400;
-}
-
-/**
  * Serverless handler for POST /api/assist.
- * @param {import("http").IncomingMessage} req
- * @param {import("http").ServerResponse} res
  */
-export default async function handler(req, res) {
-  if (req.method !== "POST") return sendError(res, 405, "Method Not Allowed");
-  if (!verifyOrigin(req)) return sendError(res, 403, "Forbidden Origin");
-  if (!checkRateLimit(req)) return sendError(res, 429, "Too Many Requests");
-
-  let body;
-  try {
-    body = await readJsonBody(req);
-  } catch (err) {
-    return sendError(res, getErrorStatus(err), "Invalid JSON body");
-  }
-
-  const parsed = AssistSchema.safeParse(body);
-  if (!parsed.success) return sendError(res, 400, "Validation failed for assist input");
-
-  const result = await generateAssistReply(
-    parsed.data.message,
-    parsed.data.profile,
-    parsed.data.language
-  );
-  return sendJson(res, 200, result, { "Cache-Control": "no-store" });
-}
+export default createHandler({
+  methods: ["POST"],
+  schema: AssistSchema,
+  schemaErrorMessage: "Validation failed for assist input",
+  run: async ({ res, data }) => {
+    const result = await generateAssistReply(data.message, data.profile, data.language);
+    return sendJson(res, 200, result, { "Cache-Control": "no-store" });
+  },
+});
