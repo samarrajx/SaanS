@@ -116,7 +116,13 @@ class MockElement {
    */
   dispatchEvent(event, data = {}) {
     if (this.listeners[event]) {
-      this.listeners[event].forEach((h) => h({ target: this, ...data }));
+      const ev = {
+        target: this,
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        ...data,
+      };
+      this.listeners[event].forEach((h) => h(ev));
     }
   }
 
@@ -179,8 +185,15 @@ function setupMockWindow() {
       clear: () => store.clear(),
     },
     location: { hash: "" },
+    print: () => {},
     addEventListener: () => {},
     removeEventListener: () => {},
+  };
+
+  /** @type {any} */ (globalThis).navigator = {
+    clipboard: {
+      writeText: async () => {},
+    },
   };
 
   /** @type {any} */ (globalThis).URL = {

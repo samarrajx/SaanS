@@ -74,6 +74,7 @@ export function validateAndMigrateProfile(raw) {
  * @returns {import("./types.js").HouseholdProfile}
  */
 export function loadProfile() {
+  if (pendingProfile) return pendingProfile;
   if (typeof window === "undefined" || !window.localStorage) {
     return getDefaultProfile();
   }

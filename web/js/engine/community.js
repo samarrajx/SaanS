@@ -156,3 +156,27 @@ export function getCommunityChecklist(type, category) {
   }
   return directItems;
 }
+
+/**
+ * Creates deterministic baseline community notices across 3 channels.
+ *
+ * @param {"rwa" | "school" | "mohalla"} type
+ * @param {import("../types.js").AQICategory} category
+ * @param {Array<{ id: string, text: string }>} checklist
+ * @returns {{ whatsapp: string, email: string, noticeBoard: string }}
+ */
+export function createBaselineNotice(type, category, checklist) {
+  const template = COMMUNITY_TEMPLATES[type] || COMMUNITY_TEMPLATES.rwa;
+  const items = checklist
+    .slice(0, 3)
+    .map((item) => `• ${item.text}`)
+    .join("\n");
+
+  const whatsapp = `🚨 *Air Quality Alert: ${category} AQI*\nDear ${template.name} Members,\nAir pollution has reached ${category} levels. Immediate actions:\n${items}\nPlease keep windows closed during morning hours and avoid open waste burning.`;
+
+  const email = `Subject: Important Advisory: Air Quality Reaches ${category} Category\n\nDear Members,\n\nIn light of the severe winter inversion and air quality reaching the ${category} category, we urge all residents and staff to adhere to the following clean-air guidelines:\n\n${items}\n\nLet us collaborate to safeguard vulnerable elders and children.\n\nWarm regards,\nManagement Committee`;
+
+  const noticeBoard = `AIR ALERT (${category.toUpperCase()} AQI): NO OPEN BURNING. SEAL WINDOWS. WEAR N95 MASKS OUTDOORS.`;
+
+  return { whatsapp, email, noticeBoard };
+}
