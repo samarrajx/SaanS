@@ -10,16 +10,23 @@ const EXIT_SUCCESS = 0; // Successful execution
 const EXIT_FAILURE = 1; // Execution failure
 
 /**
+ * Checks that Node is at least version 22.
+ * @returns {void}
+ */
+function checkNodeVersion() {
+  const nodeMajor = parseInt(process.versions.node.split(".")[0], 10);
+  if (nodeMajor < 22) {
+    console.error("Error: Node 22 or higher is required for coverage report generation.");
+    process.exit(EXIT_FAILURE);
+  }
+}
+
+/**
  * Builds node arguments based on Node version capabilities.
  * @returns {string[]}
  */
 function getNodeArgs() {
-  const nodeMajor = parseInt(process.versions.node.split(".")[0], 10);
-  const args = ["--test", "--experimental-test-coverage"];
-  if (nodeMajor >= 22) {
-    args.push('--test-coverage-exclude="tests/**"');
-  }
-  return args;
+  return ["--test", "--experimental-test-coverage", "--test-coverage-exclude=tests/**"];
 }
 
 /**
@@ -40,39 +47,54 @@ function parseTestCounts(stdout) {
 }
 
 /**
+ * @typedef {{ file: string, line: string, branch: string, funcs: string }} CoverageRow
+ */
+
+/**
  * Parses coverage report lines from node's coverage output.
  * @param {string} stdout
- * @returns {Array<{ file: string, line: string, branch: string, funcs: string }>}
+ * @returns {{ rows: CoverageRow[], aggregate: CoverageRow | null }}
  */
-function parseCoverageRows(stdout) {
+function parseCoverage(stdout) {
+  /** @type {CoverageRow[]} */
   const rows = [];
-  const lines = stdout.split("\n");
-  for (const line of lines) {
-    if (line.includes("|") && !line.includes("line %") && !line.includes("---")) {
-      const parts = line.split("|").map((p) => p.trim());
-      if (parts.length >= 4) {
-        const file = parts[0].replace(/^#\s*/, "").replace(/\\/g, "/");
-        if (!file.startsWith("tests/") && file !== "all files") {
-          rows.push({
-            file,
-            line: parts[1],
-            branch: parts[2],
-            funcs: parts[3],
-          });
-        }
+  /** @type {CoverageRow | null} */
+  let aggregate = null;
+  /** @type {string[]} */
+  const stack = [];
+
+  for (const line of stdout.split("\n")) {
+    if (!line.includes("|") || line.includes("line %") || line.includes("---")) continue;
+    const parts = line.split("|").map((p) => p.trim());
+    const firstPipe = line.indexOf("|");
+    const namePart = line.slice(1, firstPipe);
+    const trimmed = namePart.trim();
+    const indent = namePart.length - namePart.trimStart().length - 1;
+
+    if (trimmed === "all files") {
+      aggregate = { file: "all files", line: parts[1], branch: parts[2], funcs: parts[3] };
+      continue;
+    }
+    stack[indent] = trimmed;
+    stack.length = indent + 1;
+    if (parts[1] !== "") {
+      const fullPath = stack.join("/");
+      if (!fullPath.startsWith("tests/")) {
+        rows.push({ file: fullPath, line: parts[1], branch: parts[2], funcs: parts[3] });
       }
     }
   }
-  return rows;
+  return { rows, aggregate };
 }
 
 /**
  * Formats and prints the verified markdown report.
  * @param {{ total: number, pass: number, fail: number }} tests
- * @param {Array<{ file: string, line: string, branch: string, funcs: string }>} rows
+ * @param {CoverageRow[]} rows
+ * @param {CoverageRow | null} aggregate
  * @returns {void}
  */
-function printReport(tests, rows) {
+function printReport(tests, rows, aggregate) {
   console.log("\n=======================================================");
   console.log("             SAANS TEST & COVERAGE REPORT              ");
   console.log("=======================================================\n");
@@ -80,11 +102,21 @@ function printReport(tests, rows) {
   console.log(`Total tests     : ${tests.total}`);
   console.log(`Passed          : ${tests.pass}`);
   console.log(`Failed          : ${tests.fail}`);
+  if (aggregate) {
+    console.log(
+      `- **Aggregate Coverage**: Line: ${aggregate.line}% | Branch: ${aggregate.branch}% | Function: ${aggregate.funcs}%`
+    );
+  }
   console.log("\n### Production Code Coverage (excluding test files):\n");
-  console.log("| File | Line Coverage | Branch Coverage | Function Coverage |");
+  console.log("| Module / File | Line Coverage | Branch Coverage | Function Coverage |");
   console.log("| :--- | :--- | :--- | :--- |");
   for (const row of rows) {
     console.log(`| \`${row.file}\` | ${row.line}% | ${row.branch}% | ${row.funcs}% |`);
+  }
+  if (aggregate) {
+    console.log(
+      `| **all files** | ${aggregate.line}% | ${aggregate.branch}% | ${aggregate.funcs}% |`
+    );
   }
   console.log("\n=======================================================\n");
 }
@@ -94,6 +126,7 @@ function printReport(tests, rows) {
  * @returns {void}
  */
 function run() {
+  checkNodeVersion();
   const args = getNodeArgs();
   const result = spawnSync(process.execPath, args, {
     encoding: "utf8",
@@ -109,8 +142,8 @@ function run() {
   }
 
   const tests = parseTestCounts(stdout);
-  const rows = parseCoverageRows(stdout);
-  printReport(tests, rows);
+  const { rows, aggregate } = parseCoverage(stdout);
+  printReport(tests, rows, aggregate);
   process.exit(EXIT_SUCCESS);
 }
 
