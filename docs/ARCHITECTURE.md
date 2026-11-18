@@ -33,7 +33,7 @@ Saans enforces an architectural boundary:
              │
      ┌───────┴────────────────────────┐
      ▼                                ▼
-[ Offline Fallback Engine ]     [ Gemini 2.5 Flash Tool Loop ]
+[ Offline Fallback Engine ]     [ Gemini 3.8 Flash Tool Loop ]
      │                                │ (Structured Reasoning)
      └───────┬────────────────────────┘
              ▼

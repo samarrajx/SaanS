@@ -15,7 +15,7 @@ Most air quality apps merely display a frightening red number or push commercial
 - What if a family cannot afford a ₹15,000 HEPA purifier? Can a ₹400 DIY box-fan filter or sealing window drafts actually protect an infant or asthmatic grandparent?
 - How can a Resident Welfare Association (RWA) or municipal school coordinate collective action during a Severe alert?
 
-**Saans** combines **first-principles atmospheric and indoor physics** with the conversational reasoning of **Google Gemini 2.5 Flash**, delivering transparent, localized, and multi-generational clean-air guidance in **English, हिन्दी (Hindi), and Hinglish**.
+**Saans** combines **first-principles atmospheric and indoor physics** with the conversational reasoning of **Google Gemini 3.8 Flash**, delivering transparent, localized, and multi-generational clean-air guidance in **English, हिन्दी (Hindi), and Hinglish**.
 
 ---
 
@@ -76,7 +76,7 @@ Most air quality apps merely display a frightening red number or push commercial
                         ┌────────────────────────┴────────────────────────┐
                         ▼                                                 ▼
       ┌───────────────────────────────────┐             ┌───────────────────────────────────┐
-      │     Deterministic Code Engine     │             │       Gemini 2.5 Flash API        │
+      │     Deterministic Code Engine     │             │       Gemini 3.8 Flash API        │
       │   (Coded Mathematical Reality)    │             │      (Context & Judgement)        │
       ├───────────────────────────────────┤             ├───────────────────────────────────┤
       │ • NAQI Sub-Index Interpolation    │             │ • Empathetic Family Narrative     │
@@ -277,7 +277,7 @@ npm run report         # Full test and coverage report
 ```bash
 # Set your Gemini API key in local environment
 export GEMINI_API_KEY="your-gemini-api-key"
-export GEMINI_MODEL="gemini-2.5-flash"
+export GEMINI_MODEL="gemini-3.8-flash"
 
 # Start the Vercel local dev server (serves web/ and api/)
 npx vercel dev

@@ -7,7 +7,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Default model configuration
-const DEFAULT_MODEL = "gemini-2.5-flash"; // Fast Flash-class model
+const DEFAULT_MODEL = "gemini-3.8-flash"; // Fast Flash-class model
 const REQUEST_TIMEOUT_MS = 9000; // Hard timeout for serverless lifecycle
 
 /**
