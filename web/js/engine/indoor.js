@@ -62,55 +62,72 @@ export function resolveRoomVolume(profile, tier = "central") {
 }
 
 /**
+ * @typedef {Object} SteadyStateParams
+ * @property {number} outdoorPm - Outdoor PM2.5 in µg/m³
+ * @property {number} penetration - Penetration factor
+ * @property {number} ach - Air exchange rate (h⁻¹)
+ * @property {number} deposition - Deposition rate (h⁻¹)
+ * @property {number} cadr - Purifier Clean Air Delivery Rate (m³/h)
+ * @property {number} roomVolume - Room volume (m³)
+ * @property {number} [sourceEmission=0] - Indoor source rate (µg/h)
+ */
+
+/**
  * Calculates steady-state indoor PM2.5 concentration in µg/m³.
  * C_ss = (P * λ * C_out + S/V) / (λ + k + CADR/V)
  *
- * @param {number} outdoorPm - Outdoor PM2.5 in µg/m³
- * @param {number} p - Penetration factor
- * @param {number} lambda - Air exchange rate (h⁻¹)
- * @param {number} k - Deposition rate (h⁻¹)
- * @param {number} cadr - Purifier Clean Air Delivery Rate (m³/h)
- * @param {number} volume - Room volume (m³)
- * @param {number} sourceEmission - Indoor source rate (µg/h)
+ * @param {SteadyStateParams} params
  * @returns {number}
  */
-export function calculateSteadyState(outdoorPm, p, lambda, k, cadr, volume, sourceEmission = 0) {
-  const alpha = lambda + k + cadr / volume;
+export function calculateSteadyState({
+  outdoorPm,
+  penetration,
+  ach,
+  deposition,
+  cadr,
+  roomVolume,
+  sourceEmission = 0,
+}) {
+  const alpha = ach + deposition + cadr / roomVolume;
   if (alpha <= 0) return outdoorPm;
-  const generation = p * lambda * outdoorPm + sourceEmission / volume;
+  const generation = penetration * ach * outdoorPm + sourceEmission / roomVolume;
   return Math.max(ZERO_CONCENTRATION, generation / alpha);
 }
 
 /**
+ * @typedef {Object} StepIndoorParams
+ * @property {number} currentIndoor - Current indoor PM2.5 in µg/m³
+ * @property {number} outdoorPm - Outdoor PM2.5 in µg/m³
+ * @property {number} penetration - Penetration factor
+ * @property {number} ach - Air exchange rate (h⁻¹)
+ * @property {number} deposition - Deposition rate (h⁻¹)
+ * @property {number} cadr - Purifier Clean Air Delivery Rate (m³/h)
+ * @property {number} roomVolume - Room volume (m³)
+ * @property {number} [sourceEmission=0] - Indoor source rate (µg/h)
+ */
+
+/**
  * Solves one hourly step analytically: C(t+1) = C_ss + (C(t) - C_ss) * exp(-alpha * dt)
  *
- * @param {number} currentIndoorPm
- * @param {number} outdoorPm
- * @param {number} p
- * @param {number} lambda
- * @param {number} k
- * @param {number} cadr
- * @param {number} volume
- * @param {number} sourceEmission
+ * @param {StepIndoorParams} params
  * @returns {number}
  */
-export function stepIndoorPm(
-  currentIndoorPm,
+export function stepIndoorPm({
+  currentIndoor,
   outdoorPm,
-  p,
-  lambda,
-  k,
+  penetration,
+  ach,
+  deposition,
   cadr,
-  volume,
-  sourceEmission = 0
-) {
-  const alpha = lambda + k + cadr / volume;
-  const generation = p * lambda * outdoorPm + sourceEmission / volume;
-  if (alpha <= 0) return currentIndoorPm + generation * TIME_STEP_HOURS;
+  roomVolume,
+  sourceEmission = 0,
+}) {
+  const alpha = ach + deposition + cadr / roomVolume;
+  const generation = penetration * ach * outdoorPm + sourceEmission / roomVolume;
+  if (alpha <= 0) return currentIndoor + generation * TIME_STEP_HOURS;
 
   const cSteadyState = generation / alpha;
-  const nextC =
-    cSteadyState + (currentIndoorPm - cSteadyState) * Math.exp(-alpha * TIME_STEP_HOURS);
+  const nextC = cSteadyState + (currentIndoor - cSteadyState) * Math.exp(-alpha * TIME_STEP_HOURS);
   return Math.max(ZERO_CONCENTRATION, Math.round(nextC * 10) / 10);
 }
 
@@ -196,14 +213,31 @@ export function simulateIndoorSeries(hourlyOutdoorPm, profile, overrides = {}, t
   const cadr = resolvePurifierCadr(overrides, profile);
   const source = resolveSourceEmission(overrides, profile, tier);
 
-  let currentC = calculateSteadyState(hourlyOutdoorPm[0] || 100, p, lambda, k, cadr, volume, 0);
+  let currentC = calculateSteadyState({
+    outdoorPm: hourlyOutdoorPm[0] || 100,
+    penetration: p,
+    ach: lambda,
+    deposition: k,
+    cadr,
+    roomVolume: volume,
+    sourceEmission: 0,
+  });
   const result = [];
 
   for (let hour = 0; hour < 24; hour++) {
     const outdoor = hourlyOutdoorPm[hour] || 0;
     const isMealHour = hour === 8 || hour === 13 || hour === 20;
     const hourlySource = isMealHour ? source : 0;
-    currentC = stepIndoorPm(currentC, outdoor, p, lambda, k, cadr, volume, hourlySource);
+    currentC = stepIndoorPm({
+      currentIndoor: currentC,
+      outdoorPm: outdoor,
+      penetration: p,
+      ach: lambda,
+      deposition: k,
+      cadr,
+      roomVolume: volume,
+      sourceEmission: hourlySource,
+    });
     result.push(currentC);
   }
 
