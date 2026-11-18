@@ -24,7 +24,7 @@ export const PENETRATION_FACTOR = {
     central: 0.8,
     high: 0.9,
     unit: "dimensionless",
-    source: "Chen & Zhao (2011), Atmos. Environ.",
+    source: "typical range (assumption)",
     description: "Fraction of outdoor PM2.5 entering through cracks in leaky envelopes",
   },
   average: {
@@ -32,7 +32,7 @@ export const PENETRATION_FACTOR = {
     central: 0.65,
     high: 0.75,
     unit: "dimensionless",
-    source: "Chen & Zhao (2011), Atmos. Environ.",
+    source: "typical range (assumption)",
     description: "Fraction of outdoor PM2.5 entering average urban residential envelope",
   },
   tight: {
@@ -40,7 +40,7 @@ export const PENETRATION_FACTOR = {
     central: 0.45,
     high: 0.55,
     unit: "dimensionless",
-    source: "Chen & Zhao (2011), Atmos. Environ.",
+    source: "typical range (assumption)",
     description: "Fraction of outdoor PM2.5 entering weather-sealed / tight building envelope",
   },
 };
@@ -79,7 +79,7 @@ export const AIR_EXCHANGE_RATE = {
     central: 3.5,
     high: 5.0,
     unit: "h⁻¹",
-    source: "Howard-Reed et al. (2002), J. Air & Waste Manage.",
+    source: "typical range (assumption)",
     description: "Natural ventilation rate with windows open across cross-breeze",
   },
   windows_mixed: {
@@ -101,7 +101,7 @@ export const PM25_DEPOSITION_RATE = {
   central: 0.25,
   high: 0.4,
   unit: "h⁻¹",
-  source: "Thatcher & Layton (1995), Atmos. Environ.",
+  source: "typical range (assumption)",
   description: "Natural gravitational settling and surface deposition rate for fine particulate",
 };
 
@@ -138,7 +138,7 @@ export const INDOOR_SOURCE_EMISSIONS = {
     central: 3000,
     high: 5000,
     unit: "µg/h",
-    source: "Huboyo et al. (2014), Build. Environ.",
+    source: "typical range (assumption)",
     description: "PM2.5 generation during high-heat frying or tadka on LPG without strong exhaust",
   },
   cooking_biomass: {
@@ -146,7 +146,7 @@ export const INDOOR_SOURCE_EMISSIONS = {
     central: 45000,
     high: 80000,
     unit: "µg/h",
-    source: "Balakrishnan et al. (2013), Lancet Global Health",
+    source: "typical range (assumption)",
     description: "PM2.5 generation during indoor solid fuel / biomass chulha combustion",
   },
   incense_stick: {
@@ -154,7 +154,7 @@ export const INDOOR_SOURCE_EMISSIONS = {
     central: 2000,
     high: 3500,
     unit: "µg/h",
-    source: "Lin et al. (2008), Bull. Environ. Contam. Toxicol.",
+    source: "typical range (assumption)",
     description: "Hourly average fine particulate release from burning agarbatti / incense",
   },
   mosquito_coil: {
@@ -162,7 +162,7 @@ export const INDOOR_SOURCE_EMISSIONS = {
     central: 3000,
     high: 4500,
     unit: "µg/h",
-    source: "Liu et al. (2003), Environ. Health Perspect.",
+    source: "typical range (assumption)",
     description: "Combustion particulate release from standard insecticide mosquito coil",
   },
 };

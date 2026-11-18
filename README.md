@@ -141,17 +141,17 @@ Where $I_j$ is the microenvironment inhalation rate ($m^3/h$) based on exertion 
 
 ## 5. Physical Assumptions & Sources
 
-| Parameter                      | Default Value                                                       | Source / Scientific Basis                                                                |
-| :----------------------------- | :------------------------------------------------------------------ | :--------------------------------------------------------------------------------------- |
-| **Penetration Factor ($P$)**   | Leaky: `0.70`, Average: `0.55`, Tight: `0.40`                       | Chen & Zhao (2011), _Atmospheric Environment_ building envelope infiltration studies     |
-| **Air Exchange Rate ($a$)**    | Open: `1.5` $h^{-1}$, Mixed: `0.8` $h^{-1}$, Closed: `0.3` $h^{-1}$ | ASHRAE 62.2 residential ventilation standards adapted for Indian urban housing           |
-| **Deposition Rate ($k$)**      | `0.20` $h^{-1}$                                                     | Thatcher et al. (2002), empirical fine particulate surface deposition in furnished rooms |
-| **Rest Inhalation Rate**       | `0.45` $m^3/h$                                                      | US EPA Exposure Factors Handbook (Sleep / Rest)                                          |
-| **Commute Inhalation Rate**    | `0.80` $m^3/h$                                                      | US EPA Exposure Factors Handbook (Light activity)                                        |
-| **Active Exercise Inhalation** | `1.80` $m^3/h$                                                      | US EPA Exposure Factors Handbook (Moderate / Heavy exertion)                             |
-| **N95 Mask Filtration**        | `95%` efficiency (High confidence range: `80%–95%` fit factor)      | NIOSH 42 CFR Part 84 standard                                                            |
-| **DIY Box-Fan Filter CADR**    | `180` $m^3/h$                                                       | Rosenthal-Corsi box literature / UC Davis testing                                        |
-| **Commercial Purifier CADR**   | `250` $m^3/h$                                                       | AHAM AC-1 testing standard for ~250 sq ft room                                           |
+| Parameter                      | Default Value                                                       | Source / Scientific Basis     |
+| :----------------------------- | :------------------------------------------------------------------ | :---------------------------- |
+| **Penetration Factor ($P$)**   | Leaky: `0.70`, Average: `0.55`, Tight: `0.40`                       | typical range (assumption)    |
+| **Air Exchange Rate ($a$)**    | Open: `1.5` $h^{-1}$, Mixed: `0.8` $h^{-1}$, Closed: `0.3` $h^{-1}$ | typical range (assumption)    |
+| **Deposition Rate ($k$)**      | `0.20` $h^{-1}$                                                     | typical range (assumption)    |
+| **Rest Inhalation Rate**       | `0.45` $m^3/h$                                                      | typical range (assumption)    |
+| **Commute Inhalation Rate**    | `0.80` $m^3/h$                                                      | typical range (assumption)    |
+| **Active Exercise Inhalation** | `1.80` $m^3/h$                                                      | typical range (assumption)    |
+| **N95 Mask Filtration**        | `95%` efficiency (High confidence range: `80%–95%` fit factor)      | NIOSH 42 CFR Part 84 standard |
+| **DIY Box-Fan Filter CADR**    | `180` $m^3/h$                                                       | typical range (assumption)    |
+| **Commercial Purifier CADR**   | `250` $m^3/h$                                                       | typical range (assumption)    |
 
 ---
 
