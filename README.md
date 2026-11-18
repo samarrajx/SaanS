@@ -277,8 +277,13 @@ npm run report         # Full test and coverage report
 
 ### 3. Run Locally with Vercel CLI
 
+Copy `.env.example` to `.env` or export environment variables:
+
+- `GEMINI_API_KEY`: Your Google AI Studio API key (optional; if omitted, the deterministic baseline rule engine runs with zero external AI dependencies).
+- `GEMINI_MODEL`: Model identifier (defaults to `"gemini-3.8-flash"`).
+
 ```bash
-# Set your Gemini API key in local environment
+# Set your Gemini API key and model in local environment
 export GEMINI_API_KEY="your-gemini-api-key"
 export GEMINI_MODEL="gemini-3.8-flash"
 
@@ -296,7 +301,7 @@ Deploy directly to Vercel with zero build configuration:
 npx vercel --prod
 ```
 
-Ensure `GEMINI_API_KEY` is added to your Vercel Project Environment Variables.
+Ensure `GEMINI_API_KEY` and optional `GEMINI_MODEL` (defaults to `"gemini-3.8-flash"`) are configured in your Vercel Project Environment Variables.
 
 ---
 
