@@ -130,6 +130,28 @@ class MockElement {
   /** @param {string} val */
   set textContent(val) {
     this._textContent = val;
+    this.children = [];
+  }
+
+  /** @param {string} val */
+  set innerHTML(val) {
+    if (val === "") {
+      this.children = [];
+      this._textContent = "";
+    }
+  }
+
+  get innerHTML() {
+    return this.textContent;
+  }
+
+  /**
+   * @param  {...MockElement} newChildren
+   */
+  replaceChildren(...newChildren) {
+    this.children = [];
+    this._textContent = "";
+    newChildren.forEach((c) => this.appendChild(c));
   }
 
   click() {
