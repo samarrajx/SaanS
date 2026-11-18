@@ -10,13 +10,19 @@ import { GoogleGenAI } from "@google/genai";
 const DEFAULT_MODEL = "gemini-3.8-flash"; // Fast Flash-class model
 const REQUEST_TIMEOUT_MS = 9000; // Hard timeout for serverless lifecycle
 
-/** @type {any} */
+/**
+ * @typedef {Object} GeminiClientLike
+ * @property {{ generateContent: (args: { model: string, contents: string, config?: Record<string, unknown> }) => Promise<{ text?: string | (() => string) }> }} models
+ * @property {boolean} [mock]
+ */
+
+/** @type {GoogleGenAI | GeminiClientLike | Record<string, unknown> | null} */
 let injectedClient = null;
 
 /**
  * Injects a custom GenAI client for testing.
  * Pass null to restore default behavior.
- * @param {any} client
+ * @param {GoogleGenAI | GeminiClientLike | Record<string, unknown> | null} client
  */
 export function setGeminiClient(client) {
   injectedClient = client;
@@ -25,7 +31,7 @@ export function setGeminiClient(client) {
 /**
  * Returns an initialized Gemini SDK instance if API key is present,
  * or the injected mock client if set.
- * @returns {any}
+ * @returns {GoogleGenAI | GeminiClientLike | Record<string, unknown> | null}
  */
 export function getGeminiClient() {
   if (injectedClient) {
@@ -49,12 +55,12 @@ export function getModelName() {
 /**
  * Executes a generation request with timeout protection.
  *
- * @param {any} ai
+ * @param {GoogleGenAI | GeminiClientLike} ai
  * @param {string} model
- * @param {any} contents
- * @param {any} config
+ * @param {string} contents
+ * @param {Record<string, unknown>} config
  * @param {number} [timeoutMs=REQUEST_TIMEOUT_MS]
- * @returns {Promise<any>}
+ * @returns {Promise<{ text?: string | (() => string) } | null>}
  */
 async function callWithTimeout(ai, model, contents, config, timeoutMs = REQUEST_TIMEOUT_MS) {
   const controller = new AbortController();
@@ -75,7 +81,7 @@ async function callWithTimeout(ai, model, contents, config, timeoutMs = REQUEST_
       }),
       timeoutPromise,
     ]);
-    return response;
+    return /** @type {{ text?: string | (() => string) }} */ (response);
   } finally {
     clearTimeout(timer);
   }
@@ -90,7 +96,7 @@ async function callWithTimeout(ai, model, contents, config, timeoutMs = REQUEST_
  * @param {string} [options.systemInstruction]
  * @param {number} [options.maxTokens=1024]
  * @param {boolean} [options.jsonMode=false]
- * @param {any} [options.customClient=null]
+ * @param {GoogleGenAI | GeminiClientLike | null} [options.customClient=null]
  * @param {number} [options.timeoutMs=REQUEST_TIMEOUT_MS]
  * @returns {Promise<string | null>}
  */
@@ -102,11 +108,13 @@ export function generateGroundedContent({
   customClient = null,
   timeoutMs = REQUEST_TIMEOUT_MS,
 }) {
-  const ai = customClient || getGeminiClient();
+  const ai = /** @type {GoogleGenAI | GeminiClientLike | null} */ (
+    customClient || getGeminiClient()
+  );
   if (!ai) return Promise.resolve(null);
 
   const model = getModelName();
-  /** @type {any} */
+  /** @type {Record<string, unknown>} */
   const config = {
     maxOutputTokens: maxTokens,
   };
@@ -119,7 +127,11 @@ export function generateGroundedContent({
   }
 
   return callWithTimeout(ai, model, prompt, config, timeoutMs)
-    .then((res) => res.text || null)
+    .then((res) => {
+      if (!res) return null;
+      const text = typeof res.text === "function" ? res.text() : res.text;
+      return text || null;
+    })
     .catch((err) => {
       // Intentionally do not log prompt or user details
       console.warn("Gemini call failed or timed out:", err?.message || "error");

@@ -37,3 +37,19 @@ test("formatHour and formatTimeRange generate clean time strings", () => {
   assert.equal(formatTimeRange(12, 14), "12:00 – 14:00");
   assert.equal(formatNumber(15.24), "15.2");
 });
+
+test("formatRupees handles negative amounts, NaN and fallback budgets", () => {
+  assert.equal(formatRupees(-500), "-₹500");
+  assert.equal(formatRupees(NaN), "₹0");
+  assert.equal(formatRupees(100000), "₹1 Lakh");
+  assert.equal(formatRupees(10000000), "₹1 Cr");
+  assert.equal(getBudgetBandLabel(/** @type {any} */ ("unknown")), "Standard");
+});
+
+test("formatRange, formatHour and formatNumber handle edge branches", () => {
+  assert.equal(formatRange(15, 15), "15");
+  assert.equal(formatHour(0, "12h"), "12:00 AM");
+  assert.equal(formatHour(12, "12h"), "12:00 PM");
+  assert.equal(formatNumber(NaN), "0");
+  assert.equal(formatNumber(15.0), "15");
+});

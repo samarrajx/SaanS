@@ -58,6 +58,18 @@ Return JSON with exact keys:
 }
 
 /**
+ * Extracts numeric error status from unknown catch error.
+ * @param {unknown} err
+ * @returns {number}
+ */
+function getErrorStatus(err) {
+  if (err && typeof err === "object" && "status" in err && typeof err.status === "number") {
+    return err.status;
+  }
+  return 400;
+}
+
+/**
  * Serverless handler for POST /api/notice.
  * @param {import("http").IncomingMessage} req
  * @param {import("http").ServerResponse} res
@@ -71,8 +83,7 @@ export default async function handler(req, res) {
   try {
     body = await readJsonBody(req);
   } catch (err) {
-    const status = err instanceof Object && "status" in err ? /** @type {any} */ (err).status : 400;
-    return sendError(res, status, "Invalid JSON body");
+    return sendError(res, getErrorStatus(err), "Invalid JSON body");
   }
 
   const parsed = NoticeSchema.safeParse(body);

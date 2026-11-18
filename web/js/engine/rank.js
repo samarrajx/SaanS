@@ -36,7 +36,7 @@ export function isWithinBudget(costBand, userBudget = "low") {
 
 /**
  * Calculates a deterministic efficiency score for an action.
- * @param {any} action
+ * @param {import("../types.js").ActionDefinition & { costNumeric?: number }} action
  * @param {import("../types.js").ImpactEstimate} impact
  * @returns {number}
  */
@@ -46,7 +46,9 @@ function calculateEfficiencyScore(action, impact) {
     // Free actions scored highly to prioritize zero-cost behavioral hacks
     return 10000 + reduction;
   }
-  return Math.round((reduction * 10000) / action.costNumeric);
+  const cost =
+    typeof action.costNumeric === "number" && action.costNumeric > 0 ? action.costNumeric : 1;
+  return Math.round((reduction * 10000) / cost);
 }
 
 /**
@@ -55,7 +57,7 @@ function calculateEfficiencyScore(action, impact) {
  *
  * @param {import("../types.js").HouseholdProfile} profile
  * @param {number[]} outdoorPm25Series
- * @returns {Array<{ action: any, impact: import("../types.js").ImpactEstimate, score: number }>}
+ * @returns {Array<{ action: import("../types.js").ActionDefinition, impact: import("../types.js").ImpactEstimate, score: number }>}
  */
 export function rankActions(profile, outdoorPm25Series) {
   const budget = profile?.lifestyle?.budgetBand || "low";

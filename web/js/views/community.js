@@ -82,7 +82,11 @@ async function fetchNotice(type, category, lang, checklist) {
   } catch {
     // Network offline or API unavailable
   }
-  return createBaselineNotice(/** @type {any} */ (type), category, checklist);
+  return createBaselineNotice(
+    /** @type {"rwa" | "school" | "mohalla"} */ (type),
+    category,
+    checklist
+  );
 }
 
 /**

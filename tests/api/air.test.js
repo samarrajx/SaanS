@@ -86,3 +86,47 @@ test("GET /api/air returns 502 on upstream failure", async () => {
     globalThis.fetch = originalFetch;
   }
 });
+
+test("GET /api/air validates coordinate boundary limits and handles non-numeric upstream data", async () => {
+  cache.clear();
+
+  // Test longitude out of bounds
+  const badLonReq = createMockReq({ url: "/api/air?lat=28.61&lon=200" });
+  const badLonRes = createMockRes();
+  await airHandler(badLonReq, badLonRes);
+  assert.equal(badLonRes.statusCode, 400);
+
+  // Test non-numeric parameters
+  const badCoordReq = createMockReq({ url: "/api/air?lat=abc&lon=xyz" });
+  const emptyRes = createMockRes();
+  await airHandler(badCoordReq, emptyRes);
+  assert.equal(emptyRes.statusCode, 400);
+
+  // Upstream with non-numeric / null values
+  const originalFetch = globalThis.fetch;
+  /** @type {any} */ (globalThis).fetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      hourly: {
+        time: ["2026-11-18T00:00", "2026-11-18T01:00"],
+        pm2_5: [null, 99.45],
+        pm10: [undefined, 180.22],
+      },
+    }),
+  });
+
+  try {
+    const req = createMockReq({ url: "/api/air?lat=28.6139&lon=77.2090" });
+    const res = createMockRes();
+    await airHandler(req, res);
+    assert.equal(res.statusCode, 200);
+    const data = JSON.parse(res.body);
+    assert.equal(data.pm25[0], 0);
+    assert.equal(data.pm25[1], 99.5);
+    assert.equal(data.pm10[0], 0);
+    assert.equal(data.pm10[1], 180.2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

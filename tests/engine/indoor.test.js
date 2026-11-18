@@ -106,3 +106,21 @@ test("simulateIndoorSeries proves purifier substantially reduces indoor PM2.5", 
 
   assert.ok(avgWith < avgWithout * 0.25); // At least 75% reduction
 });
+
+test("simulateIndoorSeries handles custom source emissions and fallback profile defaults", () => {
+  const outdoorSeries = Array(24).fill(100);
+  const withSource = simulateIndoorSeries(outdoorSeries, /** @type {any} */ (undefined), {
+    sourceEmission: 40,
+  });
+  assert.ok(withSource[0] > 0);
+
+  /** @type {any} */
+  const emptyProfile = { home: {} };
+  const withEmpty = simulateIndoorSeries(outdoorSeries, emptyProfile);
+  assert.equal(withEmpty.length, 24);
+
+  /** @type {any} */
+  const biomassProfile = { home: { cookingFuel: "biomass" } };
+  const withBiomass = simulateIndoorSeries(outdoorSeries, biomassProfile);
+  assert.equal(withBiomass.length, 24);
+});

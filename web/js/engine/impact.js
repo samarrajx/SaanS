@@ -15,7 +15,7 @@ const N95_CENTRAL_EFFICIENCY = 0.9; // 90% effective reduction outdoors with typ
 /**
  * Calculates commute emission savings for transit mode swaps.
  * @param {import("../types.js").HouseholdProfile} profile
- * @returns {any}
+ * @returns {{ co2e: import("../types.js").ImpactRange, pm: import("../types.js").ImpactRange }}
  */
 function calculateCommuteSavings(profile) {
   const commutes = profile?.lifestyle?.commute || [];
@@ -110,7 +110,7 @@ function getActionAssumptions(actionId) {
  * Estimates impact for special actions with direct empirical or transit models.
  * @param {import("../types.js").ActionDefinition} action
  * @param {import("../types.js").HouseholdProfile} profile
- * @returns {any}
+ * @returns {(Omit<import("../types.js").ImpactEstimate, "assumptions" | "confidence">) | null}
  */
 function estimateSpecialAction(action, profile) {
   if (action.group === "commute") {

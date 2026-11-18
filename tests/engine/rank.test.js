@@ -56,3 +56,16 @@ test("rankActions produces deterministic stable ordering", () => {
     assert.equal(run1[i].score, run2[i].score);
   }
 });
+
+test("rankActions handles missing lifestyle and zero cost bands cleanly", () => {
+  /** @type {any} */
+  const minimalProfile = {
+    household: { members: [] },
+    home: { type: "flat" },
+  };
+  const airSeries = Array(24).fill(150);
+  const ranked = rankActions(minimalProfile, airSeries);
+  assert.ok(ranked.length > 0);
+  assert.equal(isWithinBudget("₹₹", "zero"), false);
+  assert.equal(isWithinBudget(/** @type {any} */ ("unknown"), "zero"), true);
+});

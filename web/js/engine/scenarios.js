@@ -99,7 +99,7 @@ export const PRESET_SCENARIOS = {
  * Returns a fully formed simulated air data object labeled "Simulated".
  *
  * @param {keyof typeof PRESET_SCENARIOS} scenarioKey
- * @returns {import("../types.js").HourlySeries & { label: string, location: any }}
+ * @returns {import("../types.js").HourlySeries & { label: string, location: { name: string, lat: number, lon: number, timezone: string } }}
  */
 export function getSimulatedScenario(scenarioKey = "PATNA_SEVERE") {
   const config = PRESET_SCENARIOS[scenarioKey] || PRESET_SCENARIOS.PATNA_SEVERE;

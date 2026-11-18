@@ -58,7 +58,7 @@ function calculateLedger(adoptedIds, profile, pm25Series) {
 
 /**
  * Builds the impact ledger summary card.
- * @param {any} ledger
+ * @param {{ count: number, avgExposure: number, avoidedCo2e: number, avoidedPmG: number }} ledger
  * @returns {HTMLElement}
  */
 function buildLedgerCard(ledger) {

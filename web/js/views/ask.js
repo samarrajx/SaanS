@@ -38,7 +38,7 @@ function buildPromptPills(onSelect) {
 
 /**
  * Renders a single chat bubble.
- * @param {{ sender: string, text: string, patch?: any }} msg
+ * @param {{ sender: string, text: string, patch?: { op: string, value?: unknown } | null }} msg
  * @param {import("../types.js").HouseholdProfile} profile
  * @returns {HTMLDivElement}
  */
@@ -59,7 +59,7 @@ function buildMessageBubble(msg, profile) {
 /**
  * Generates offline fallback reply when API is unreachable.
  * @param {string} query
- * @returns {{ reply: string, patch: any | null }}
+ * @returns {{ reply: string, patch: { op: string, value?: unknown } | null }}
  */
 function getOfflineFallbackReply(query) {
   const lower = query.toLowerCase();
@@ -88,7 +88,7 @@ function getOfflineFallbackReply(query) {
  * Sends chat query to /api/assist with fallback.
  * @param {string} message
  * @param {import("../types.js").HouseholdProfile} profile
- * @returns {Promise<{ reply: string, patch: any | null }>}
+ * @returns {Promise<{ reply: string, patch: { op: string, value?: unknown } | null }>}
  */
 async function sendAssistMessage(message, profile) {
   try {
@@ -148,7 +148,7 @@ function buildChatForm(onSubmit) {
  * @param {import("../types.js").HouseholdProfile} profile
  */
 function setupChatConversation(cardContent, profile) {
-  /** @type {Array<{ sender: string, text: string, patch?: any }>} */
+  /** @type {Array<{ sender: string, text: string, patch?: { op: string, value?: unknown } | null }>} */
   const history = [
     {
       sender: "assistant",

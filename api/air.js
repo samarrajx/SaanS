@@ -19,7 +19,7 @@ const RESOLUTION_NOTE = "Area model estimate (~25-45 km), not a street-level mon
 
 /**
  * Normalizes Open-Meteo upstream JSON to Saans HourlySeries structure.
- * @param {any} raw
+ * @param {{ hourly?: { time?: string[], pm2_5?: unknown[], pm10?: unknown[] } } | null | undefined} raw
  * @returns {import("../web/js/types.js").HourlySeries}
  */
 function normalizeUpstreamAir(raw) {
@@ -29,8 +29,12 @@ function normalizeUpstreamAir(raw) {
 
   return {
     times,
-    pm25: pm25.map((/** @type {any} */ v) => (typeof v === "number" ? Math.round(v * 10) / 10 : 0)),
-    pm10: pm10.map((/** @type {any} */ v) => (typeof v === "number" ? Math.round(v * 10) / 10 : 0)),
+    pm25: pm25.map((/** @type {unknown} */ v) =>
+      typeof v === "number" ? Math.round(v * 10) / 10 : 0
+    ),
+    pm10: pm10.map((/** @type {unknown} */ v) =>
+      typeof v === "number" ? Math.round(v * 10) / 10 : 0
+    ),
     meta: {
       model: "CAMS ENSEMBLE",
       resolutionNote: RESOLUTION_NOTE,
@@ -44,7 +48,7 @@ function normalizeUpstreamAir(raw) {
  * Fetches air quality data from Open-Meteo with timeout.
  * @param {number} lat
  * @param {number} lon
- * @returns {Promise<any>}
+ * @returns {Promise<{ hourly?: { time?: string[], pm2_5?: unknown[], pm10?: unknown[] } }>}
  */
 async function fetchOpenMeteoAir(lat, lon) {
   const url = new URL("https://air-quality-api.open-meteo.com/v1/air-quality");

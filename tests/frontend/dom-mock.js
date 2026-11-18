@@ -151,9 +151,13 @@ class MockElement {
  * Sets up global mock window, localStorage and URL utilities.
  * @returns {{ store: Map<string, string> }}
  */
-function setupMockWindow() {
-  /** @type {Map<string, string>} */
-  const store = new Map();
+/**
+ * Sets up global mock window and location utilities.
+ * @param {Map<string, string>} store
+ */
+function setupMockWindowObject(store) {
+  /** @type {Record<string, Function[]>} */
+  const winListeners = {};
   /** @type {any} */ (globalThis).window = {
     localStorage: {
       /** @param {string} k */
@@ -164,22 +168,66 @@ function setupMockWindow() {
       removeItem: (k) => store.delete(k),
       clear: () => store.clear(),
     },
-    location: { hash: "" },
+    location: {
+      _hash: "",
+      get hash() {
+        return this._hash;
+      },
+      set hash(v) {
+        this._hash = v;
+      },
+    },
     print: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
+    /** @param {string} event @param {Function} handler */
+    addEventListener: (event, handler) => {
+      if (!winListeners[event]) winListeners[event] = [];
+      winListeners[event].push(handler);
+    },
+    /** @param {string} event @param {Function} handler */
+    removeEventListener: (event, handler) => {
+      if (winListeners[event]) {
+        winListeners[event] = winListeners[event].filter((h) => h !== handler);
+      }
+    },
+    /** @param {string} event @param {any} [data] */
+    dispatchEvent: (event, data = {}) => {
+      if (winListeners[event]) {
+        winListeners[event].forEach((h) => h({ type: event, ...data }));
+      }
+    },
   };
+}
 
+/**
+ * Sets up global mock navigator with geolocation and clipboard.
+ */
+function setupMockNavigator() {
   Object.defineProperty(globalThis, "navigator", {
     value: {
       clipboard: {
         writeText: async () => {},
       },
+      geolocation: {
+        /** @param {Function} success @param {Function} [_error] */
+        getCurrentPosition: (success, _error) => {
+          success({
+            coords: {
+              latitude: 25.594,
+              longitude: 85.137,
+            },
+          });
+        },
+      },
     },
     configurable: true,
     writable: true,
   });
+}
 
+/**
+ * Sets up global browser primitives: URL, Blob, FileReader.
+ */
+function setupMockFileApis() {
   /** @type {any} */ (globalThis).URL = {
     createObjectURL: () => "blob:mock-url",
     revokeObjectURL: () => {},
@@ -193,32 +241,41 @@ function setupMockWindow() {
     }
   };
 
+  if (!globalThis.FileReader) {
+    /** @type {any} */ (globalThis).FileReader = class MockFileReader {
+      constructor() {
+        /** @type {((event: { target: { result: string } }) => void) | null} */
+        this.onload = null;
+      }
+      /** @param {any} file */
+      readAsText(file) {
+        setTimeout(() => {
+          if (this.onload) {
+            this.onload({ target: { result: file?.text || "{}" } });
+          }
+        }, 0);
+      }
+    };
+  }
+}
+
+/**
+ * Sets up global mock window, localStorage and URL utilities.
+ * @returns {{ store: Map<string, string> }}
+ */
+function setupMockWindow() {
+  /** @type {Map<string, string>} */
+  const store = new Map();
+  setupMockWindowObject(store);
+  setupMockNavigator();
+  setupMockFileApis();
   return { store };
 }
 
-export function setupMockDom() {
-  const body = new MockElement("body");
-  /** @type {Map<string, MockElement>} */
-  const elementRegistry = new Map();
-
-  const doc = {
-    body,
-    documentElement: new MockElement("html"),
-    /** @param {string} tag */
-    createElement: (tag) => new MockElement(tag),
-    /** @param {string} _ns @param {string} tag */
-    createElementNS: (_ns, tag) => new MockElement(tag),
-    /** @param {string} id */
-    getElementById: (id) =>
-      elementRegistry.get(id) || (id === "app-announcer" ? new MockElement("div") : null),
-    /** @param {string} _sel */
-    querySelectorAll: (_sel) => [],
-    addEventListener: () => {},
-  };
-
-  const { store } = setupMockWindow();
-
-  /** @type {any} */ (globalThis).document = doc;
+/**
+ * Binds DOM element constructor prototypes to globalThis.
+ */
+function bindGlobalElementConstructors() {
   /** @type {any} */ (globalThis).HTMLElement = MockElement;
   /** @type {any} */ (globalThis).HTMLSpanElement = MockElement;
   /** @type {any} */ (globalThis).HTMLDivElement = MockElement;
@@ -228,6 +285,53 @@ export function setupMockDom() {
   /** @type {any} */ (globalThis).HTMLInputElement = MockElement;
   /** @type {any} */ (globalThis).HTMLSelectElement = MockElement;
   /** @type {any} */ (globalThis).SVGSVGElement = MockElement;
+}
 
-  return { elementRegistry, store };
+export function setupMockDom() {
+  const body = new MockElement("body");
+  /** @type {Map<string, any>} */
+  const elementRegistry = new Map();
+  /** @type {Map<string, any[]>} */
+  const queryRegistry = new Map();
+  /** @type {Record<string, Function[]>} */
+  const docListeners = {};
+
+  const doc = {
+    body,
+    documentElement: new MockElement("html"),
+    /** @param {string} tag */
+    createElement: (tag) => new MockElement(tag),
+    /** @param {string} _ns @param {string} tag */
+    createElementNS: (_ns, tag) => new MockElement(tag),
+    /** @param {string} id */
+    getElementById: (id) => {
+      if (elementRegistry.has(id)) return elementRegistry.get(id);
+      return id === "app-announcer" ? new MockElement("div") : null;
+    },
+    /** @param {string} sel */
+    querySelectorAll: (sel) => queryRegistry.get(sel) || [],
+    /** @param {string} event @param {Function} handler */
+    addEventListener: (event, handler) => {
+      if (!docListeners[event]) docListeners[event] = [];
+      docListeners[event].push(handler);
+    },
+    /** @param {string} event @param {Function} handler */
+    removeEventListener: (event, handler) => {
+      if (docListeners[event]) {
+        docListeners[event] = docListeners[event].filter((h) => h !== handler);
+      }
+    },
+    /** @param {string} event @param {any} [data] */
+    dispatchEvent: (event, data = {}) => {
+      if (docListeners[event]) {
+        docListeners[event].forEach((h) => h({ type: event, ...data }));
+      }
+    },
+  };
+
+  const { store } = setupMockWindow();
+  /** @type {any} */ (globalThis).document = doc;
+  bindGlobalElementConstructors();
+
+  return { elementRegistry, queryRegistry, store };
 }

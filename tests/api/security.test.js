@@ -35,6 +35,10 @@ test("verifyOrigin strictly rejects suffix spoofing and foreign domains", () => 
   /** @type {any} */
   const evil3 = { headers: { origin: "https://attacker.com", host: "saans.vercel.app" } };
   assert.equal(verifyOrigin(evil3), false);
+
+  /** @type {any} */
+  const malformedOrigin = { headers: { origin: "not-a-valid-url" } };
+  assert.equal(verifyOrigin(malformedOrigin), false);
 });
 
 test("checkRateLimit tracks per-IP window and throttles excess calls", () => {
@@ -49,6 +53,14 @@ test("checkRateLimit tracks per-IP window and throttles excess calls", () => {
   }
   // 6th call should be blocked by limit 5
   assert.equal(checkRateLimit(req, 5), false);
+
+  /** @type {any} */
+  const socketReq = { headers: {}, socket: { remoteAddress: "192.168.1.10" } };
+  assert.equal(checkRateLimit(socketReq, 10), true);
+
+  /** @type {any} */
+  const fallbackReq = { headers: {}, socket: {} };
+  assert.equal(checkRateLimit(fallbackReq, 10), true);
 });
 
 test("readJsonBody caps oversized payload at 32KB", async () => {

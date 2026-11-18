@@ -13,26 +13,31 @@ const GeocodeQuerySchema = z.object({
 
 /**
  * Normalizes Open-Meteo geocoding search results.
- * @param {any} raw
+ * @param {{ results?: Array<Record<string, unknown>> } | null | undefined} raw
  * @returns {Array<{ name: string, admin: string, country: string, lat: number, lon: number, timezone: string }>}
  */
 function normalizeGeocodeResults(raw) {
   if (!raw?.results || !Array.isArray(raw.results)) return [];
 
-  return raw.results.slice(0, 5).map((/** @type {any} */ item) => ({
-    name: item.name || "",
-    admin: item.admin1 || item.admin2 || "",
-    country: item.country || "",
-    lat: Math.round((item.latitude || 0) * 100) / 100,
-    lon: Math.round((item.longitude || 0) * 100) / 100,
-    timezone: item.timezone || "Asia/Kolkata",
+  return raw.results.slice(0, 5).map((/** @type {Record<string, unknown>} */ item) => ({
+    name: typeof item.name === "string" ? item.name : "",
+    admin:
+      typeof item.admin1 === "string"
+        ? item.admin1
+        : typeof item.admin2 === "string"
+          ? item.admin2
+          : "",
+    country: typeof item.country === "string" ? item.country : "",
+    lat: Math.round((typeof item.latitude === "number" ? item.latitude : 0) * 100) / 100,
+    lon: Math.round((typeof item.longitude === "number" ? item.longitude : 0) * 100) / 100,
+    timezone: typeof item.timezone === "string" ? item.timezone : "Asia/Kolkata",
   }));
 }
 
 /**
  * Fetches location search from Open-Meteo Geocoding API.
  * @param {string} query
- * @returns {Promise<any>}
+ * @returns {Promise<{ results?: Array<Record<string, unknown>> }>}
  */
 async function fetchOpenMeteoGeocode(query) {
   const url = new URL("https://geocoding-api.open-meteo.com/v1/search");

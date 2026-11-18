@@ -44,7 +44,7 @@ function showPhysicsModal() {
 
 /**
  * Builds simulation control fields.
- * @param {any} state
+ * @param {{ purifier: string, windows: string }} state
  * @param {() => void} onUpdate
  * @returns {HTMLElement}
  */
@@ -135,7 +135,7 @@ function buildSummary(baseMean, actionMean) {
  * @param {HTMLElement} summaryMount
  * @param {import("../types.js").HourlySeries} series
  * @param {import("../types.js").HouseholdProfile} profile
- * @param {any} state
+ * @param {{ purifier: string, windows: string }} state
  */
 function renderSimulation(chartMount, summaryMount, series, profile, state) {
   const baseIndoor = simulateIndoorSeries(series.pm25, profile, { cadr: 0 });

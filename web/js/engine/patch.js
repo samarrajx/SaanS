@@ -26,24 +26,38 @@ function cloneProfile(profile) {
 }
 
 /**
+ * Updates purifier configuration on the household profile clone.
+ * @param {import("../types.js").HouseholdProfile} clone
+ * @param {unknown} value
+ * @returns {string}
+ */
+function updatePurifierState(clone, value) {
+  const purifierVal = /** @type {{ has?: boolean, cadrM3h?: number } | null | undefined} */ (value);
+  const hasPurifier = Boolean(purifierVal && purifierVal.has);
+  const cadr = purifierVal && purifierVal.cadrM3h ? purifierVal.cadrM3h : 250;
+  clone.home.purifier = { has: hasPurifier, cadrM3h: cadr };
+  const desc = hasPurifier ? `Active (CADR ${cadr} m³/h)` : "None";
+  return `Updated purifier: ${desc}`;
+}
+
+/**
  * Handles home-related profile patches.
  * @param {import("../types.js").HouseholdProfile} clone
- * @param {{ op: string, value: any }} patch
+ * @param {{ op: string, value?: unknown }} patch
  * @returns {string}
  */
 function applyHomePatch(clone, patch) {
   if (patch.op === "set_cooking_fuel") {
     const oldFuel = clone.home.cookingFuel;
-    clone.home.cookingFuel = patch.value;
+    clone.home.cookingFuel = /** @type {import("../types.js").CookingFuel} */ (patch.value);
     return `Changed cooking fuel from ${oldFuel} to ${patch.value}`;
   }
   if (patch.op === "set_purifier") {
-    clone.home.purifier = { has: Boolean(patch.value.has), cadrM3h: patch.value.cadrM3h || 250 };
-    return `Updated purifier: ${patch.value.has ? "Active (CADR " + (patch.value.cadrM3h || 250) + " m³/h)" : "None"}`;
+    return updatePurifierState(clone, patch.value);
   }
   if (patch.op === "set_window_habit") {
     const oldHabit = clone.home.windowsUsually;
-    clone.home.windowsUsually = patch.value;
+    clone.home.windowsUsually = /** @type {import("../types.js").WindowHabit} */ (patch.value);
     return `Updated window habit from ${oldHabit} to ${patch.value}`;
   }
   return "";
@@ -52,7 +66,7 @@ function applyHomePatch(clone, patch) {
 /**
  * Handles lifestyle and commute profile patches.
  * @param {import("../types.js").HouseholdProfile} clone
- * @param {{ op: string, value: any }} patch
+ * @param {{ op: string, value?: unknown }} patch
  * @returns {string}
  */
 function applyLifestylePatch(clone, patch) {
@@ -61,18 +75,20 @@ function applyLifestylePatch(clone, patch) {
     if (!clone.lifestyle.commute[0]) {
       clone.lifestyle.commute.push({
         memberId: "default",
-        mode: patch.value,
+        mode: /** @type {import("../types.js").CommuteMode} */ (patch.value),
         distanceKm: 15,
         daysPerWeek: 5,
       });
     } else {
-      clone.lifestyle.commute[0].mode = patch.value;
+      clone.lifestyle.commute[0].mode = /** @type {import("../types.js").CommuteMode} */ (
+        patch.value
+      );
     }
     return `Changed commute mode from ${oldMode} to ${patch.value}`;
   }
   if (patch.op === "set_budget_band") {
     const oldBand = clone.lifestyle.budgetBand;
-    clone.lifestyle.budgetBand = patch.value;
+    clone.lifestyle.budgetBand = /** @type {import("../types.js").BudgetBand} */ (patch.value);
     return `Changed budget preference from ${oldBand} to ${patch.value}`;
   }
   return "";
@@ -81,14 +97,17 @@ function applyLifestylePatch(clone, patch) {
 /**
  * Handles action adoption and reminders.
  * @param {import("../types.js").HouseholdProfile} clone
- * @param {{ op: string, value: any }} patch
+ * @param {{ op: string, value?: unknown }} patch
  * @returns {string}
  */
 function applyActionPatch(clone, patch) {
   if (patch.op === "adopt_action") {
     if (!clone.adoptedActions) clone.adoptedActions = [];
     if (!clone.adoptedActions.some((a) => a.actionId === patch.value)) {
-      clone.adoptedActions.push({ actionId: patch.value, since: new Date().toISOString() });
+      clone.adoptedActions.push({
+        actionId: String(patch.value),
+        since: new Date().toISOString(),
+      });
     }
     return `Adopted action: ${patch.value}`;
   }
@@ -98,7 +117,7 @@ function applyActionPatch(clone, patch) {
   }
   if (patch.op === "add_reminder") {
     if (!clone.reminders) clone.reminders = [];
-    clone.reminders.push(patch.value);
+    clone.reminders.push(String(patch.value));
     return `Added reminder: ${patch.value}`;
   }
   return "";
@@ -107,7 +126,7 @@ function applyActionPatch(clone, patch) {
 /**
  * Applies a single patch operation to a cloned profile.
  * @param {import("../types.js").HouseholdProfile} clone
- * @param {{ op: string, value: any }} patch
+ * @param {{ op: string, value?: unknown }} patch
  * @returns {string} Diff description
  */
 function applySingleOp(clone, patch) {
@@ -127,7 +146,7 @@ function applySingleOp(clone, patch) {
  * Applies an allowlisted patch to a household profile immutably.
  *
  * @param {import("../types.js").HouseholdProfile} currentProfile
- * @param {{ op: string, value: any }} patch
+ * @param {{ op: string, value?: unknown }} patch
  * @returns {{ success: boolean, updatedProfile: import("../types.js").HouseholdProfile, diff: string, error?: string }}
  */
 export function applyPatch(currentProfile, patch) {

@@ -7,7 +7,7 @@
  * Builds a select input element with option items.
  * @param {string} id
  * @param {Array<{ label: string, value: string }>} options
- * @param {any} value
+ * @param {string | number | boolean | undefined} value
  * @returns {HTMLSelectElement}
  */
 function buildSelectInput(id, options, value) {
@@ -28,7 +28,7 @@ function buildSelectInput(id, options, value) {
  * Builds standard input or checkbox element.
  * @param {string} id
  * @param {string} type
- * @param {any} value
+ * @param {string | number | boolean | undefined} value
  * @returns {HTMLInputElement}
  */
 function buildStandardInput(id, type, value) {
@@ -68,10 +68,10 @@ function attachHelpText(container, inputEl, id, helpText) {
  * @param {string} options.id - HTML ID
  * @param {string} options.label - Label text
  * @param {"text" | "number" | "select" | "checkbox"} [options.type="text"]
- * @param {any} [options.value] - Initial value
+ * @param {string | number | boolean} [options.value] - Initial value
  * @param {Array<{ label: string, value: string }>} [options.options] - Select options
  * @param {string} [options.helpText] - Explanatory hint
- * @param {(val: any) => void} [options.onChange]
+ * @param {(val: string) => void} [options.onChange]
  * @returns {HTMLDivElement}
  */
 export function createFormField({
@@ -99,7 +99,9 @@ export function createFormField({
     inputEl.addEventListener("change", (e) => {
       const target = /** @type {HTMLInputElement | HTMLSelectElement} */ (e.target);
       const val =
-        type === "checkbox" ? /** @type {HTMLInputElement} */ (target).checked : target.value;
+        type === "checkbox"
+          ? String(/** @type {HTMLInputElement} */ (target).checked)
+          : target.value;
       onChange(val);
     });
   }

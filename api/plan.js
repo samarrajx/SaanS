@@ -22,9 +22,9 @@ const PlanRequestSchema = z.object({
     lon: z.number().min(-180).max(180),
     name: z.string().max(100).optional(),
   }),
-  household: z.any().optional(),
-  home: z.any().optional(),
-  lifestyle: z.any().optional(),
+  household: z.record(z.string(), z.unknown()).optional().nullable(),
+  home: z.record(z.string(), z.unknown()).optional().nullable(),
+  lifestyle: z.record(z.string(), z.unknown()).optional().nullable(),
   language: z.enum(["en", "hi", "hinglish"]).default("en"),
 });
 
@@ -65,7 +65,7 @@ async function getVerifiedAirData(lat, lon) {
 
 /**
  * Prompts Gemini to write a grounded narrative summary based on engine baseline facts.
- * @param {any} baseline
+ * @param {ReturnType<typeof generateBaselinePlan>} baseline
  * @param {string} language
  * @returns {Promise<string | null>}
  */
@@ -74,7 +74,7 @@ async function draftAiNarrative(baseline, language) {
 Air data facts:
 - Headline AQI: ${baseline.headlineNAQI.aqi} (${baseline.headlineNAQI.category})
 - Dominant pollutant: ${baseline.headlineNAQI.dominantPollutant.toUpperCase()}
-- Key actions: ${baseline.topActions.map((/** @type {any} */ a) => a.title).join(", ")}
+- Key actions: ${baseline.topActions.map((/** @type {import("../web/js/types.js").ActionDefinition} */ a) => a.title).join(", ")}
 
 Task: Write a calm, 2-sentence summary and 3 direct bullet points for today in ${language}.
 Rules: DO NOT invent numbers or medical diagnoses. Treat data as facts. Return plain text.`;
@@ -85,6 +85,18 @@ Rules: DO NOT invent numbers or medical diagnoses. Treat data as facts. Return p
       "You are Saans. Explain physical air data plainly without medical diagnoses.",
     maxTokens: 512,
   });
+}
+
+/**
+ * Extracts numeric error status from unknown catch error.
+ * @param {unknown} err
+ * @returns {number}
+ */
+function getErrorStatus(err) {
+  if (err && typeof err === "object" && "status" in err && typeof err.status === "number") {
+    return err.status;
+  }
+  return 400;
 }
 
 /**
@@ -101,15 +113,19 @@ export default async function handler(req, res) {
   try {
     body = await readJsonBody(req);
   } catch (err) {
-    const status = err instanceof Object && "status" in err ? /** @type {any} */ (err).status : 400;
-    return sendError(res, status, "Invalid JSON body");
+    return sendError(res, getErrorStatus(err), "Invalid JSON body");
   }
 
   const parsed = PlanRequestSchema.safeParse(body);
   if (!parsed.success) return sendError(res, 400, "Validation failed for plan input");
 
   const airData = await getVerifiedAirData(parsed.data.location.lat, parsed.data.location.lon);
-  const baseline = generateBaselinePlan(/** @type {any} */ (parsed.data), airData);
+  const baseline = generateBaselinePlan(
+    /** @type {import("../web/js/types.js").HouseholdProfile} */ (
+      /** @type {unknown} */ (parsed.data)
+    ),
+    airData
+  );
 
   const aiNarrative = await draftAiNarrative(baseline, parsed.data.language);
   if (aiNarrative) {

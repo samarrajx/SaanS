@@ -75,7 +75,7 @@ export function checkRateLimit(req, limit = DEFAULT_RATE_LIMIT) {
  * Reads and parses JSON body up to 32 KB.
  *
  * @param {import("http").IncomingMessage} req
- * @returns {Promise<any>}
+ * @returns {Promise<unknown>}
  */
 export function readJsonBody(req) {
   return new Promise((resolve, reject) => {
@@ -128,7 +128,7 @@ export function sendError(res, status, message) {
  *
  * @param {import("http").ServerResponse} res
  * @param {number} status
- * @param {any} data
+ * @param {unknown} data
  * @param {Record<string, string>} [headers={}]
  * @returns {void}
  */

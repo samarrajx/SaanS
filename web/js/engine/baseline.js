@@ -40,8 +40,8 @@ function createPlainSummary(naqi, sensitive) {
  *   summary: string,
  *   headlineNAQI: import("../types.js").NAQIResult,
  *   dayPlan: import("../types.js").DayBlock[],
- *   rankedActions: Array<{ action: any, impact: import("../types.js").ImpactEstimate, score: number }>,
- *   topActions: any[],
+ *   rankedActions: Array<{ action: import("../types.js").ActionDefinition, impact: import("../types.js").ImpactEstimate, score: number }>,
+ *   topActions: import("../types.js").ActionDefinition[],
  *   caveat: string
  * }}
  */

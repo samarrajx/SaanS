@@ -41,7 +41,14 @@ export function openWhyThisModal(action, profile, outdoorPm25) {
 
 /**
  * Builds footer action buttons.
- * @param {any} opts
+ * @param {Object} opts
+ * @param {import("../types.js").ActionDefinition} opts.action
+ * @param {import("../types.js").HouseholdProfile} opts.profile
+ * @param {number[]} opts.outdoorPm25
+ * @param {boolean} opts.isAdopted
+ * @param {string} opts.adoptLabel
+ * @param {string} opts.unadoptLabel
+ * @param {() => void} opts.onToggleAdopt
  * @returns {HTMLElement}
  */
 function buildActionFooter({
@@ -116,7 +123,7 @@ export function createActionCard({
   const footer = buildActionFooter({
     action,
     profile,
-    outdoorPm25,
+    outdoorPm25: outdoorPm25 || [],
     isAdopted,
     adoptLabel,
     unadoptLabel,

@@ -61,3 +61,40 @@ test("all ALLOWLISTED_OPERATIONS succeed with valid payloads", () => {
     assert.equal(res.success, true, `Operation ${op} failed`);
   }
 });
+
+test("applyPatch handles purifier defaults and falsy values", () => {
+  /** @type {any} */
+  const base = {
+    home: { purifier: { has: true, cadrM3h: 300 } },
+    lifestyle: { commute: [] },
+  };
+  const offRes = applyPatch(base, { op: "set_purifier", value: { has: false } });
+  assert.equal(offRes.updatedProfile.home.purifier.has, false);
+
+  const defaultCadrRes = applyPatch(base, { op: "set_purifier", value: { has: true } });
+  assert.equal(defaultCadrRes.updatedProfile.home.purifier.cadrM3h, 250);
+});
+
+test("applyPatch handles empty commute, duplicate actions, and reminders", () => {
+  /** @type {any} */
+  const base = {
+    home: {},
+    lifestyle: { commute: [] },
+  };
+  // Commute mode on empty commute array
+  const commRes = applyPatch(base, { op: "set_commute_mode", value: "metro" });
+  assert.equal(commRes.updatedProfile.lifestyle.commute[0].mode, "metro");
+
+  // Duplicate adopt_action
+  const adopt1 = applyPatch(base, { op: "adopt_action", value: "act1" });
+  const adopt2 = applyPatch(adopt1.updatedProfile, { op: "adopt_action", value: "act1" });
+  assert.equal(adopt2.updatedProfile.adoptedActions.length, 1);
+
+  // drop_action when undefined
+  const dropRes = applyPatch(base, { op: "drop_action", value: "none" });
+  assert.equal(dropRes.updatedProfile.adoptedActions.length, 0);
+
+  // add_reminder when undefined
+  const remRes = applyPatch(base, { op: "add_reminder", value: "Check filter" });
+  assert.equal(remRes.updatedProfile.reminders.length, 1);
+});

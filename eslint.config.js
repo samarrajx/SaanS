@@ -47,10 +47,6 @@ export default [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-      },
     },
     plugins: {
       saans: {
@@ -80,7 +76,7 @@ export default [
       ],
       complexity: ["error", 10],
       "max-lines-per-function": [
-        "warn",
+        "error",
         {
           max: 40,
           skipBlankLines: true,
@@ -88,6 +84,30 @@ export default [
         },
       ],
       "saans/max-lines-error-50": "error",
+    },
+  },
+  {
+    files: ["web/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
+    files: ["api/**/*.js", "scripts/**/*.js", "tests/**/*.js", "eslint.config.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  {
+    files: ["tests/frontend/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
     },
   },
   {

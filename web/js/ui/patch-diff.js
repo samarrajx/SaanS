@@ -11,7 +11,7 @@ import { applyPatch } from "../engine/patch.js";
  * Wire up apply and undo buttons for a patch.
  * @param {HTMLButtonElement} applyBtn
  * @param {HTMLButtonElement} undoBtn
- * @param {any} patch
+ * @param {{ op: string, value?: unknown }} patch
  * @param {import("../types.js").HouseholdProfile} profile
  */
 function wirePatchButtons(applyBtn, undoBtn, patch, profile) {
@@ -40,7 +40,7 @@ function wirePatchButtons(applyBtn, undoBtn, patch, profile) {
 /**
  * Creates an accessible diff card with Apply and Undo actions.
  * @param {Object} options
- * @param {any} options.patch
+ * @param {{ op: string, value?: unknown }} options.patch
  * @param {import("../types.js").HouseholdProfile} options.profile
  * @returns {HTMLDivElement}
  */

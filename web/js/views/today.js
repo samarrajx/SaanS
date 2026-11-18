@@ -119,7 +119,7 @@ function buildForecastChart(series) {
 
 /**
  * Builds top 3 action cards list.
- * @param {Array<{ action: any }>} ranked
+ * @param {Array<{ action: import("../types.js").ActionDefinition }>} ranked
  * @param {import("../types.js").HouseholdProfile} profile
  * @param {number[]} pm25Series
  * @returns {HTMLElement}

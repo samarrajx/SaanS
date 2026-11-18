@@ -16,33 +16,35 @@ import { ALLOWLISTED_OPERATIONS } from "../web/js/engine/patch.js";
 
 const AssistSchema = z.object({
   message: z.string().trim().min(1).max(500),
-  profile: z.any(),
+  profile: z.record(z.string(), z.unknown()).optional().nullable(),
   language: z.enum(["en", "hi", "hinglish"]).default("en"),
 });
 
 /**
  * Validates that an AI proposed patch strictly adheres to the allowlist.
- * @param {any} patch
- * @returns {any | null}
+ * @param {{ op?: string, value?: unknown } | null | undefined} patch
+ * @returns {{ op: string, value: unknown } | null}
  */
 function sanitizeProposedPatch(patch) {
-  if (!patch || typeof patch !== "object") return null;
-  if (!ALLOWLISTED_OPERATIONS.includes(patch.op)) return null;
+  if (!patch || typeof patch !== "object" || typeof patch.op !== "string") return null;
+  if (!ALLOWLISTED_OPERATIONS.includes(/** @type {string} */ (patch.op))) return null;
   return { op: patch.op, value: patch.value };
 }
 
 /**
  * Builds user context prompt with XML escaping for data boundary.
  * @param {string} userMessage
- * @param {any} profile
+ * @param {Record<string, unknown> | null | undefined} profile
  * @returns {string}
  */
 function buildAssistPrompt(userMessage, profile) {
-  const home = profile?.home;
-  const fuel = home?.cookingFuel || "unknown";
-  const hasPurifier = Boolean(home?.purifier?.has);
+  const home = /** @type {Record<string, unknown> | undefined} */ (profile?.home);
+  const fuel = typeof home?.cookingFuel === "string" ? home.cookingFuel : "unknown";
+  const purifierObj = /** @type {{ has?: boolean } | undefined} */ (home?.purifier);
+  const hasPurifier = Boolean(purifierObj?.has);
   const purifier = hasPurifier ? "Yes" : "No";
-  const budget = profile?.lifestyle?.budgetBand || "standard";
+  const lifestyle = /** @type {Record<string, unknown> | undefined} */ (profile?.lifestyle);
+  const budget = typeof lifestyle?.budgetBand === "string" ? lifestyle.budgetBand : "standard";
   const cleanMsg = userMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   return `User profile context:\nCooking fuel: ${fuel}, Purifier: ${purifier}, Budget: ${budget}\n\n<user_message>\n${cleanMsg}\n</user_message>`;
@@ -51,7 +53,7 @@ function buildAssistPrompt(userMessage, profile) {
 /**
  * Parses and validates raw model response JSON.
  * @param {string | null} rawJson
- * @returns {{ reply: string, patch: any | null } | null}
+ * @returns {{ reply: string, patch: { op: string, value: unknown } | null } | null}
  */
 function parseAssistResponse(rawJson) {
   if (!rawJson) return null;
@@ -69,9 +71,9 @@ function parseAssistResponse(rawJson) {
 /**
  * Prompts Gemini with user message as tagged data and requests JSON reply + optional patch.
  * @param {string} userMessage
- * @param {any} profile
+ * @param {Record<string, unknown> | null | undefined} profile
  * @param {string} language
- * @returns {Promise<{ reply: string, patch: any | null }>}
+ * @returns {Promise<{ reply: string, patch: { op: string, value: unknown } | null }>}
  */
 async function generateAssistReply(userMessage, profile, language) {
   const systemInstruction = `You are Saans, an empathetic clean-air assistant for Indian families.
@@ -81,7 +83,7 @@ Rules:
 - Never diagnose medical symptoms; recommend consulting a doctor for breathing issues.
 - You may propose a profile update ONLY if the user explicitly asks to update a setting.
 Allowed patch ops: set_commute_mode, set_cooking_fuel, set_purifier, set_window_habit, adopt_action, drop_action, set_budget_band.
-Output JSON schema: { "reply": "string", "patch": { "op": "string", "value": "any" } or null }`;
+Output JSON schema: { "reply": "string", "patch": { "op": "string", "value": "string | number | boolean | object" } or null }`;
 
   const prompt = buildAssistPrompt(userMessage, profile);
   const rawJson = await generateGroundedContent({
@@ -102,6 +104,18 @@ Output JSON schema: { "reply": "string", "patch": { "op": "string", "value": "an
 }
 
 /**
+ * Extracts numeric error status from unknown catch error.
+ * @param {unknown} err
+ * @returns {number}
+ */
+function getErrorStatus(err) {
+  if (err && typeof err === "object" && "status" in err && typeof err.status === "number") {
+    return err.status;
+  }
+  return 400;
+}
+
+/**
  * Serverless handler for POST /api/assist.
  * @param {import("http").IncomingMessage} req
  * @param {import("http").ServerResponse} res
@@ -115,8 +129,7 @@ export default async function handler(req, res) {
   try {
     body = await readJsonBody(req);
   } catch (err) {
-    const status = err instanceof Object && "status" in err ? /** @type {any} */ (err).status : 400;
-    return sendError(res, status, "Invalid JSON body");
+    return sendError(res, getErrorStatus(err), "Invalid JSON body");
   }
 
   const parsed = AssistSchema.safeParse(body);

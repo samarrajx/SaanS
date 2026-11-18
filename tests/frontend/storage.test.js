@@ -31,3 +31,24 @@ test("validateAndMigrateProfile repairs missing or corrupt data gracefully", () 
   assert.equal(migrated.location.name, "Delhi");
   assert.ok(migrated.home); // Repaired with default home
 });
+
+test("storage operations: loadProfile, saveProfile, flushStorage, clearProfile", async () => {
+  const { setupMockDom } = await import("./dom-mock.js");
+  setupMockDom();
+  const { loadProfile, saveProfile, flushStorage, clearProfile } =
+    await import("../../web/js/storage.js");
+
+  const p1 = loadProfile();
+  assert.equal(p1.location.name, "Patna, Bihar");
+
+  p1.location.name = "Chandigarh";
+  saveProfile(p1);
+  flushStorage();
+
+  const p2 = loadProfile();
+  assert.equal(p2.location.name, "Chandigarh");
+
+  clearProfile();
+  const p3 = loadProfile();
+  assert.equal(p3.location.name, "Patna, Bihar");
+});

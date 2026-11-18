@@ -85,3 +85,24 @@ test("generateBaselinePlan produces complete plan across all profile classes", (
     assert.ok(plan.caveat.includes("not medical advice"), `${name}: caveat missing`);
   }
 });
+
+test("generateBaselinePlan handles Moderate and Good air categories", () => {
+  const profile = TEST_PROFILES[0].profile;
+  const modScenario = {
+    times: Array(24).fill("2026-11-18T12:00"),
+    pm25: Array(24).fill(75),
+    pm10: Array(24).fill(150),
+    meta: { model: "TEST", resolutionNote: "None", fetchedAt: "", attribution: "" },
+  };
+  const modPlan = generateBaselinePlan(/** @type {any} */ (profile), modScenario);
+  assert.ok(modPlan.summary.includes("Moderate"));
+
+  const goodScenario = {
+    times: Array(24).fill("2026-11-18T12:00"),
+    pm25: Array(24).fill(15),
+    pm10: Array(24).fill(30),
+    meta: { model: "TEST", resolutionNote: "None", fetchedAt: "", attribution: "" },
+  };
+  const goodPlan = generateBaselinePlan(/** @type {any} */ (profile), goodScenario);
+  assert.ok(goodPlan.summary.includes("Good") || goodPlan.summary.includes("NAQI"));
+});

@@ -9,7 +9,7 @@ export const STORAGE_KEY = "saans_profile_v1"; // LocalStorage namespace
 export const CURRENT_SCHEMA_VERSION = 1; // Current schema version
 const WRITE_DEBOUNCE_MS = 300; // Debounce window for writes
 
-/** @type {any} */
+/** @type {ReturnType<typeof setTimeout> | null} */
 let debounceTimer = null;
 /** @type {import("./types.js").HouseholdProfile | null} */
 let pendingProfile = null;
@@ -55,16 +55,24 @@ export function getDefaultProfile() {
 
 /**
  * Validates and migrates profile data.
- * @param {any} raw
+ * @param {unknown} raw
  * @returns {import("./types.js").HouseholdProfile}
  */
 export function validateAndMigrateProfile(raw) {
-  if (!raw || typeof raw !== "object" || !raw.household || !raw.location) {
+  if (
+    !raw ||
+    typeof raw !== "object" ||
+    !("household" in raw) ||
+    !("location" in raw) ||
+    !raw.household ||
+    !raw.location
+  ) {
     return getDefaultProfile();
   }
+  const obj = /** @type {Record<string, unknown>} */ (raw);
   return {
     ...getDefaultProfile(),
-    ...raw,
+    ...obj,
     schemaVersion: CURRENT_SCHEMA_VERSION,
   };
 }

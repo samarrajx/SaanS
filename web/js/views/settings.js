@@ -105,7 +105,7 @@ function createLanguageField(profile) {
       { label: "Hinglish", value: "hinglish" },
     ],
     onChange: (val) => {
-      profile.language = val;
+      profile.language = /** @type {import("../types.js").LanguageCode} */ (val);
       saveProfile(profile);
       document.documentElement.lang = val === "hi" ? "hi" : "en";
       announce("Language updated");
@@ -132,7 +132,7 @@ function createBudgetField(profile) {
     ],
     onChange: (val) => {
       if (!profile.lifestyle) profile.lifestyle = { commute: [], vehicles: [], budgetBand: "low" };
-      profile.lifestyle.budgetBand = val;
+      profile.lifestyle.budgetBand = /** @type {import("../types.js").BudgetBand} */ (val);
       saveProfile(profile);
       announce("Budget preference updated");
     },

@@ -9,7 +9,7 @@ const MAX_CACHE_ENTRIES = 200; // Max items per instance
 
 /**
  * @typedef {Object} CacheItem
- * @property {any} value
+ * @property {unknown} value
  * @property {number} expiresAt
  */
 
@@ -23,7 +23,7 @@ const geocodeCache = new Map();
  * Stores an item in cache, evicting oldest if capacity reached.
  * @param {Map<string, CacheItem>} map
  * @param {string} key
- * @param {any} value
+ * @param {unknown} value
  * @param {number} ttlMs
  */
 function setWithEviction(map, key, value, ttlMs) {
@@ -38,7 +38,7 @@ function setWithEviction(map, key, value, ttlMs) {
  * Retrieves a non-expired cache value.
  * @param {Map<string, CacheItem>} map
  * @param {string} key
- * @returns {any | null}
+ * @returns {unknown | null}
  */
 function getValid(map, key) {
   const item = map.get(key);
@@ -53,28 +53,28 @@ function getValid(map, key) {
 export const cache = {
   /**
    * @param {string} key
-   * @returns {any | null}
+   * @returns {unknown | null}
    */
   getAir(key) {
     return getValid(airCache, key);
   },
   /**
    * @param {string} key
-   * @param {any} value
+   * @param {unknown} value
    */
   setAir(key, value) {
     setWithEviction(airCache, key, value, AIR_CACHE_TTL_MS);
   },
   /**
    * @param {string} key
-   * @returns {any | null}
+   * @returns {unknown | null}
    */
   getGeocode(key) {
     return getValid(geocodeCache, key);
   },
   /**
    * @param {string} key
-   * @param {any} value
+   * @param {unknown} value
    */
   setGeocode(key, value) {
     setWithEviction(geocodeCache, key, value, GEOCODE_CACHE_TTL_MS);
