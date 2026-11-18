@@ -7,7 +7,7 @@ import { hi } from "./hi.js";
 import { hinglish } from "./hinglish.js";
 
 /** @type {Record<string, Record<string, string>>} */
-export const LOCALES = {
+const LOCALES = {
   en,
   hi,
   hinglish,

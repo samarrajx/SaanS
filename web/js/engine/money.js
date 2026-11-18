@@ -3,14 +3,6 @@
  * Handles Indian numbering system (Lakh/Crore grouping) and cost band symbols.
  */
 
-// Cost band symbols and labels
-export const COST_BANDS = {
-  ZERO: "₹0",
-  LOW: "₹",
-  MEDIUM: "₹₹",
-  HIGH: "₹₹₹",
-};
-
 /**
  * Formats a numeric rupee amount using the Indian numbering system (lakh/crore).
  * Examples: 500 -> "₹500", 25000 -> "₹25,000", 150000 -> "₹1.5 Lakh"

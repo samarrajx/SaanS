@@ -5,7 +5,7 @@
  */
 
 // Storage constants
-export const STORAGE_KEY = "saans_profile_v1"; // LocalStorage namespace
+const STORAGE_KEY = "saans_profile_v1"; // LocalStorage namespace
 export const CURRENT_SCHEMA_VERSION = 1; // Current schema version
 const WRITE_DEBOUNCE_MS = 300; // Debounce window for writes
 

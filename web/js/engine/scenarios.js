@@ -23,7 +23,7 @@ const PM10_RATIO = 1.65; // PM10 to PM2.5 ratio in winter dust/combustion mix
  * Generates an ISO timestamps array for 24 hours starting today at 00:00 local time.
  * @returns {string[]}
  */
-export function generate24HourTimestamps() {
+function generate24HourTimestamps() {
   const now = new Date();
   const times = [];
   for (let h = 0; h < 24; h++) {

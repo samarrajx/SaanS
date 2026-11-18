@@ -223,5 +223,5 @@
  * @property {number} outdoorPm - Forecast PM2.5 in block
  */
 
-// Export dummy constant so this file is recognized as an ES module
-export const TYPES_VERSION = 1;
+// Export empty object so this file is recognized as an ES module
+export {};

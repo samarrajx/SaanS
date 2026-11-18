@@ -8,8 +8,6 @@ import { loadProfile, saveProfile } from "./storage.js";
 import { getLocale } from "./locales/index.js";
 import { announce } from "./ui/announcer.js";
 
-export const APP_NAME = "Saans";
-
 const NAV_ITEMS = [
   { id: "today", label: "Today", icon: "📊" },
   { id: "plan", label: "Day Plan", icon: "🕒" },
@@ -43,7 +41,7 @@ function renderNav(navElement) {
  * Updates header demo mode status banner and buttons.
  * @param {HTMLElement} statusElement
  */
-export function updateHeaderStatus(statusElement) {
+function updateHeaderStatus(statusElement) {
   statusElement.replaceChildren();
   const profile = loadProfile();
 
@@ -86,7 +84,7 @@ export function updateHeaderStatus(statusElement) {
 /**
  * Bootstraps the application shell.
  */
-export function initApp() {
+function initApp() {
   const nav = document.getElementById("main-nav");
   if (nav) renderNav(nav);
 
