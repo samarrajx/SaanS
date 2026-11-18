@@ -117,5 +117,44 @@ Every patch proposal generates a visible diff in the chat UI with **"Apply to Pr
 ## 6. Zero-Framework Frontend & Performance
 
 - **Zero Bundle Step**: Native ES Modules (`<script type="module">`), pure vanilla JavaScript, and modern semantic CSS variables.
-- **Zero Third-Party Chart Libraries**: All hourly strip charts, range bands, and before/after comparisons are generated as lightweight, inline semantic SVGs with accompanying data tables.
-- **Lightweight Footprint**: Entire Git repository is $< 200\text{ KB}$, loads instantly on 3G connections, and works completely offline once cached.
+- **Zero Third-Party Chart Libraries**: All hourly strip charts, range bands, and before/after comparisons are generated as lightweight, inline semantic SVGs with accompanying data tables via `web/js/ui/chart-utils.js`.
+- **Lightweight Footprint**: Entire Git repository is $< 500\text{ KB}$, loads instantly on 3G connections, and works completely offline once cached.
+
+---
+
+## 7. Modular Repository Architecture
+
+The codebase is organized into zero-dependency, cohesive single-responsibility modules:
+
+```
+├── api/
+│   ├── _lib/
+│   │   ├── cache.js         # In-memory TTL cache for weather & air cells
+│   │   ├── gemini.js        # Serverless Gemini client & token/timeout bounding
+│   │   ├── handler.js       # createHandler factory (method, origin, rate limits, schema)
+│   │   └── security.js      # CORS, CSP, JSON serialization & error handlers
+│   ├── air.js               # GET /api/air Open-Meteo proxy with attribution
+│   ├── assist.js            # POST /api/assist Gemini assistant with tagged user input
+│   ├── geocode.js           # GET /api/geocode location search
+│   ├── notice.js            # POST /api/notice RWA/school circular generator
+│   ├── ping.js              # GET /api/ping healthcheck
+│   └── plan.js              # POST /api/plan day plan orchestrator
+├── docs/
+│   ├── ARCHITECTURE.md      # System architecture & physical models
+│   └── Saans-PLAN.md        # Technical specifications & roadmap
+├── web/
+│   ├── css/                 # Modern CSS variables, tokens, and components
+│   └── js/
+│       ├── engine/          # Deterministic physics, NAQI calculation, scheduling
+│       ├── locales/         # i18n dictionaries (en, hi, hinglish)
+│       ├── ui/              # Semantic WAI-ARIA UI primitives
+│       │   ├── chart-utils.js # Shared SVG chart container & data table toggle
+│       │   ├── chart-line.js  # Diurnal PM2.5 vector line chart
+│       │   ├── chart-bars.js  # Comparative metric bar chart
+│       │   └── ...            # card, chip, modal, tabs, form-field, etc.
+│       ├── views/           # Application route view controllers
+│       ├── app.js           # Main application bootstrap
+│       ├── router.js        # Zero-dependency hash router
+│       └── storage.js       # LocalStorage persistence & migration
+└── tests/                   # 154 node:test suites (API, Engine, Frontend DOM)
+```
