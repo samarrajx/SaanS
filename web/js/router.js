@@ -41,7 +41,7 @@ export async function navigateTo(routeName) {
   const container = document.getElementById("view-container");
   if (!container) return;
 
-  container.innerHTML = "";
+  container.replaceChildren();
   const loading = document.createElement("p");
   loading.className = "view-loading";
   loading.textContent = "Loading...";
@@ -49,7 +49,7 @@ export async function navigateTo(routeName) {
 
   try {
     const module = await ROUTES[targetRoute]();
-    container.innerHTML = "";
+    container.replaceChildren();
     container.appendChild(module.render());
 
     updateNavActive(targetRoute);
@@ -60,7 +60,7 @@ export async function navigateTo(routeName) {
     if (main) main.focus();
   } catch (err) {
     console.error("Navigation error:", err);
-    container.innerHTML = "";
+    container.replaceChildren();
     const errorP = document.createElement("p");
     errorP.className = "view-error";
     errorP.textContent = "Failed to load view. Please try again.";

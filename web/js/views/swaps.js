@@ -102,7 +102,7 @@ function buildLedgerCard(ledger) {
  * @param {() => void} onRefresh
  */
 function renderSwapsList(listContainer, profile, pm25Series, onRefresh) {
-  listContainer.innerHTML = "";
+  listContainer.replaceChildren();
 
   SWAP_IDS.forEach((id) => {
     const act = ACTIONS_CATALOG.find((a) => a.id === id);
@@ -150,7 +150,7 @@ export function render() {
   function refresh() {
     const adoptedIds = profile.adoptedActions.map((a) => a.actionId);
     const ledger = calculateLedger(adoptedIds, profile, series.pm25);
-    ledgerMount.innerHTML = "";
+    ledgerMount.replaceChildren();
     ledgerMount.appendChild(buildLedgerCard(ledger));
     renderSwapsList(listMount, profile, series.pm25, refresh);
   }

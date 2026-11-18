@@ -147,11 +147,11 @@ function renderSimulation(chartMount, summaryMount, series, profile, state) {
   const baseMean = baseIndoor.reduce((a, b) => a + b, 0) / 24;
   const actionMean = actionIndoor.reduce((a, b) => a + b, 0) / 24;
 
-  summaryMount.innerHTML = "";
+  summaryMount.replaceChildren();
   summaryMount.appendChild(buildSummary(baseMean, actionMean));
 
   const hours = series.times.map((t) => t.substring(11, 16));
-  chartMount.innerHTML = "";
+  chartMount.replaceChildren();
   chartMount.appendChild(
     createLineChart({
       title: "Indoor vs Outdoor PM2.5 Simulation (µg/m³)",

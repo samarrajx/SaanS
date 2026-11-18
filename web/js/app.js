@@ -25,7 +25,7 @@ const NAV_ITEMS = [
  * @param {HTMLElement} navElement
  */
 function renderNav(navElement) {
-  navElement.innerHTML = "";
+  navElement.replaceChildren();
   const profile = loadProfile();
   const t = getLocale(profile.language);
 
@@ -44,7 +44,7 @@ function renderNav(navElement) {
  * @param {HTMLElement} statusElement
  */
 export function updateHeaderStatus(statusElement) {
-  statusElement.innerHTML = "";
+  statusElement.replaceChildren();
   const profile = loadProfile();
 
   if (profile.isDemo) {

@@ -76,7 +76,7 @@ export function createTabs({ tabs, activeId = tabs[0]?.id, onTabChange }) {
   let buttons = [];
   /** @param {string} id */
   function renderActiveTab(id) {
-    panel.innerHTML = "";
+    panel.replaceChildren();
     buttons.forEach((btn) => {
       const isSelected = btn.getAttribute("data-tab-id") === id;
       btn.setAttribute("aria-selected", isSelected ? "true" : "false");
