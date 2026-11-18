@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Saans: AI Clean-Air Assistant for Families & Communities navigating winter smog and urban air pollution."
+    />
+    <meta name="theme-color" content="#0d9488" />
+    <title>Saans — Clean-Air Assistant for Families &amp; Communities</title>
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="app-header" role="banner">
+      <div class="header-inner">
+        <div class="brand">
+          <span class="brand-icon" aria-hidden="true">🌱</span>
+          <span class="brand-title">Saans</span>
+          <span class="brand-tagline" data-i18n="tagline">Clean-Air Assistant</span>
+        </div>
+        <div id="header-status" class="header-status"></div>
+      </div>
+    </header>
+
+    <div class="app-layout">
+      <nav id="main-nav" class="app-nav" aria-label="Main Navigation">
+        <!-- Injected by router/nav -->
+      </nav>
+
+      <main id="main-content" class="app-main" tabindex="-1">
+        <div id="view-container">
+          <!-- Views rendered here -->
+        </div>
+      </main>
+    </div>
+
+    <footer class="app-footer" role="contentinfo">
+      <p class="data-caveat" data-i18n="dataCaveat">
+        Air quality data from CAMS ENSEMBLE via Open-Meteo (CC BY 4.0). PM-based NAQI estimate, not
+        an official monitor reading. Estimates are for daily planning, not medical advice.
+      </p>
+    </footer>
+
+    <!-- Screen-reader live announcer -->
+    <div id="app-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>

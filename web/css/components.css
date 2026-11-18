@@ -1,0 +1,116 @@
+/**
+ * Shared component styles.
+ */
+
+/* Welcome / Card */
+.welcome-card,
+.ui-card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-4);
+}
+
+.ui-card-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+/* Button */
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  background-color: var(--color-brand-primary);
+  color: #ffffff;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.ui-button:hover {
+  background-color: var(--color-brand-primary-hover);
+}
+
+.ui-button.secondary {
+  background-color: var(--color-bg-card-muted);
+  color: var(--color-text-main);
+  border-color: var(--color-border);
+}
+
+.ui-button.secondary:hover {
+  background-color: var(--color-border-subtle);
+}
+
+/* Chips / Badges */
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+}
+
+/* CPCB Category Badges */
+.chip-aqi-good {
+  background-color: var(--color-aqi-good-bg);
+  color: var(--color-aqi-good-text);
+  border-color: var(--color-aqi-good-border);
+}
+
+.chip-aqi-satisfactory {
+  background-color: var(--color-aqi-satisfactory-bg);
+  color: var(--color-aqi-satisfactory-text);
+  border-color: var(--color-aqi-satisfactory-border);
+}
+
+.chip-aqi-moderate {
+  background-color: var(--color-aqi-moderate-bg);
+  color: var(--color-aqi-moderate-text);
+  border-color: var(--color-aqi-moderate-border);
+}
+
+.chip-aqi-poor {
+  background-color: var(--color-aqi-poor-bg);
+  color: var(--color-aqi-poor-text);
+  border-color: var(--color-aqi-poor-border);
+}
+
+.chip-aqi-verypoor {
+  background-color: var(--color-aqi-verypoor-bg);
+  color: var(--color-aqi-verypoor-text);
+  border-color: var(--color-aqi-verypoor-border);
+}
+
+.chip-aqi-severe {
+  background-color: var(--color-aqi-severe-bg);
+  color: var(--color-aqi-severe-text);
+  border-color: var(--color-aqi-severe-border);
+}
+
+/* Form controls */
+.ui-input,
+.ui-select,
+.ui-textarea {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  width: 100%;
+  background-color: var(--color-bg-card);
+  color: var(--color-text-main);
+}

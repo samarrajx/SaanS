@@ -1,0 +1,82 @@
+/**
+ * Design tokens for Saans.
+ * Calibrated for calm, trustworthy light theme and WCAG AA contrast (4.5:1 text, 3:1 UI).
+ */
+
+:root {
+  /* Brand palette */
+  --color-brand-primary: #0f766e;
+  --color-brand-primary-hover: #115e59;
+  --color-brand-surface: #f0fdfa;
+  --color-brand-border: #99f6e4;
+
+  /* Neutrals */
+  --color-bg-canvas: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-card-muted: #f1f5f9;
+  --color-border: #cbd5e1;
+  --color-border-subtle: #e2e8f0;
+  --color-text-main: #0f172a;
+  --color-text-muted: #475569;
+  --color-text-subtle: #64748b;
+
+  /* CPCB AQI Category Colors (text / background / border) with WCAG AA compliance */
+  --color-aqi-good-text: #14532d;
+  --color-aqi-good-bg: #dcfce7;
+  --color-aqi-good-border: #86efac;
+
+  --color-aqi-satisfactory-text: #365314;
+  --color-aqi-satisfactory-bg: #ecfccb;
+  --color-aqi-satisfactory-border: #bef264;
+
+  --color-aqi-moderate-text: #713f12;
+  --color-aqi-moderate-bg: #fef3c7;
+  --color-aqi-moderate-border: #fde047;
+
+  --color-aqi-poor-text: #7c2d12;
+  --color-aqi-poor-bg: #ffedd5;
+  --color-aqi-poor-border: #fdba74;
+
+  --color-aqi-verypoor-text: #7f1d1d;
+  --color-aqi-verypoor-bg: #fee2e2;
+  --color-aqi-verypoor-border: #fca5a5;
+
+  --color-aqi-severe-text: #4a044e;
+  --color-aqi-severe-bg: #fae8ff;
+  --color-aqi-severe-border: #f0abfc;
+
+  /* Typography */
+  --font-family-system:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+  /* Touch target standard */
+  --touch-target-min: 44px;
+}
