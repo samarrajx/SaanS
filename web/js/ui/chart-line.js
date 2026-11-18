@@ -32,8 +32,23 @@ function buildPoints(values, minVal, maxVal) {
 }
 
 /**
+ * @typedef {Object} LineChartSeries
+ * @property {string} name
+ * @property {number[]} values
+ * @property {string} color
+ */
+
+/**
+ * @typedef {Object} LineChartOptions
+ * @property {string} title - Chart title
+ * @property {LineChartSeries[]} series
+ * @property {string[]} labels - X-axis labels (e.g. hours)
+ * @property {string} [unit="µg/m³"]
+ */
+
+/**
  * Builds the SVG element with axes and series lines.
- * @param {Array<{ name: string, values: number[], color: string }>} series
+ * @param {LineChartSeries[]} series
  * @param {string[]} [_labels]
  * @returns {SVGSVGElement}
  */
@@ -71,11 +86,7 @@ function renderSvg(series, _labels) {
 /**
  * Creates an accessible line chart widget with toggleable data table.
  *
- * @param {Object} options
- * @param {string} options.title - Chart title
- * @param {Array<{ name: string, values: number[], color: string }>} options.series
- * @param {string[]} options.labels - X-axis labels (e.g. hours)
- * @param {string} [options.unit="µg/m³"]
+ * @param {LineChartOptions} options
  * @returns {HTMLDivElement}
  */
 export function createLineChart({ title, series, labels, unit = "µg/m³" }) {

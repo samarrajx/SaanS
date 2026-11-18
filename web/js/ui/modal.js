@@ -30,8 +30,15 @@ function buildModalHeader(title, onClose) {
 }
 
 /**
+ * @typedef {Object} ModalAction
+ * @property {string} label
+ * @property {() => void} onClick
+ * @property {boolean} [isPrimary]
+ */
+
+/**
  * Builds modal action footer.
- * @param {Array<{ label: string, onClick: () => void, isPrimary?: boolean }>} actions
+ * @param {ModalAction[]} actions
  * @param {() => void} closeModal
  * @returns {HTMLDivElement}
  */
@@ -54,13 +61,17 @@ function buildModalFooter(actions, closeModal) {
 }
 
 /**
+ * @typedef {Object} ModalOptions
+ * @property {string} title - Modal heading
+ * @property {HTMLElement} content - Body DOM element
+ * @property {ModalAction[]} [actions=[]]
+ * @property {() => void} [onClose]
+ */
+
+/**
  * Creates and displays an accessible modal dialog.
  *
- * @param {Object} options
- * @param {string} options.title - Modal heading
- * @param {HTMLElement} options.content - Body DOM element
- * @param {Array<{ label: string, onClick: () => void, isPrimary?: boolean }>} [options.actions=[]]
- * @param {() => void} [options.onClose]
+ * @param {ModalOptions} options
  * @returns {{ close: () => void, element: HTMLDivElement }}
  */
 export function openModal({ title, content, actions = [], onClose }) {

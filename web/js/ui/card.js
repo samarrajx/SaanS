@@ -4,15 +4,19 @@
  */
 
 /**
+ * @typedef {Object} CardOptions
+ * @property {string} [title] - Card title
+ * @property {string} [subtitle] - Card subtitle/description
+ * @property {HTMLElement | HTMLElement[]} [content] - Body elements
+ * @property {HTMLElement} [footer] - Footer actions element
+ * @property {string} [className=""] - Additional class names
+ * @property {string} [ariaLabel] - Accessible label
+ */
+
+/**
  * Creates an accessible UI card element.
  *
- * @param {Object} options
- * @param {string} [options.title] - Card title
- * @param {string} [options.subtitle] - Card subtitle/description
- * @param {HTMLElement | HTMLElement[]} [options.content] - Body elements
- * @param {HTMLElement} [options.footer] - Footer actions element
- * @param {string} [options.className=""] - Additional class names
- * @param {string} [options.ariaLabel] - Accessible label
+ * @param {CardOptions} options
  * @returns {HTMLElement}
  */
 export function createCard({ title, subtitle, content, footer, className = "", ariaLabel }) {

@@ -29,6 +29,13 @@ function handleTabKeydown(e, buttons, selectTab) {
 }
 
 /**
+ * @typedef {Object} TabDefinition
+ * @property {string} id
+ * @property {string} label
+ * @property {() => HTMLElement} render
+ */
+
+/**
  * Builds individual tab buttons.
  * @param {Array<{ id: string, label: string }>} tabs
  * @param {(id: string) => void} onSelect
@@ -57,12 +64,16 @@ function buildTabButtons(tabs, onSelect) {
 }
 
 /**
+ * @typedef {Object} TabsOptions
+ * @property {TabDefinition[]} tabs
+ * @property {string} [activeId]
+ * @property {(id: string) => void} [onTabChange]
+ */
+
+/**
  * Creates accessible tabs with keyboard arrow support.
  *
- * @param {Object} options
- * @param {Array<{ id: string, label: string, render: () => HTMLElement }>} options.tabs
- * @param {string} [options.activeId]
- * @param {(id: string) => void} [options.onTabChange]
+ * @param {TabsOptions} options
  * @returns {HTMLDivElement}
  */
 export function createTabs({ tabs, activeId = tabs[0]?.id, onTabChange }) {

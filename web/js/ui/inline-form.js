@@ -3,14 +3,18 @@
  */
 
 /**
+ * @typedef {Object} InlineFormOptions
+ * @property {string} id
+ * @property {string} [placeholder=""]
+ * @property {string} buttonLabel
+ * @property {string} [value=""]
+ * @property {(val: string) => void} onSubmit
+ */
+
+/**
  * Creates an inline form container with input and submit button.
  *
- * @param {Object} options
- * @param {string} options.id
- * @param {string} [options.placeholder=""]
- * @param {string} options.buttonLabel
- * @param {string} [options.value=""]
- * @param {(val: string) => void} options.onSubmit
+ * @param {InlineFormOptions} options
  * @returns {HTMLFormElement}
  */
 export function createInlineForm({ id, placeholder = "", buttonLabel, value = "", onSubmit }) {

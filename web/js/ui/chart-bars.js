@@ -9,8 +9,22 @@ const BAR_HEIGHT = 28; // Height per bar in px
 const CHART_WIDTH = 450; // Reference SVG coordinate width
 
 /**
+ * @typedef {Object} BarChartItem
+ * @property {string} label
+ * @property {number} value
+ * @property {string} [color]
+ * @property {string} [unit]
+ */
+
+/**
+ * @typedef {Object} BarChartOptions
+ * @property {string} title
+ * @property {BarChartItem[]} data
+ */
+
+/**
  * Builds SVG bars representation.
- * @param {Array<{ label: string, value: number, color?: string, unit?: string }>} items
+ * @param {BarChartItem[]} items
  * @returns {SVGSVGElement}
  */
 function renderBarSvg(items) {
@@ -56,9 +70,7 @@ function renderBarSvg(items) {
 /**
  * Creates an accessible bar chart with data table parity.
  *
- * @param {Object} options
- * @param {string} options.title
- * @param {Array<{ label: string, value: number, color?: string, unit?: string }>} options.data
+ * @param {BarChartOptions} options
  * @returns {HTMLDivElement}
  */
 export function createBarChart({ title, data }) {

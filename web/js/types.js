@@ -77,15 +77,19 @@
  */
 
 /**
+ * @typedef {Object} SeriesMeta
+ * @property {string} model - Model name
+ * @property {string} resolutionNote - Spatial resolution note
+ * @property {string} fetchedAt - Fetch timestamp
+ * @property {string} attribution - Required attribution string
+ */
+
+/**
  * @typedef {Object} HourlySeries
  * @property {string[]} times - ISO datetime strings
  * @property {number[]} pm25 - Hourly PM2.5 in µg/m³
  * @property {number[]} pm10 - Hourly PM10 in µg/m³
- * @property {Object} meta
- * @property {string} meta.model - Model name
- * @property {string} meta.resolutionNote - Spatial resolution note
- * @property {string} meta.fetchedAt - Fetch timestamp
- * @property {string} meta.attribution - Required attribution string
+ * @property {SeriesMeta} meta
  */
 
 /**
@@ -105,35 +109,70 @@
  */
 
 /**
+ * @typedef {Object} LocationProfile
+ * @property {string} name - City/area name
+ * @property {number} lat - Latitude (rounded)
+ * @property {number} lon - Longitude (rounded)
+ * @property {string} timezone - Timezone name
+ */
+
+/**
+ * @typedef {Object} HouseholdGroup
+ * @property {HouseholdMember[]} members - Household members
+ */
+
+/**
+ * @typedef {Object} PurifierSpecs
+ * @property {boolean} has - Whether purifier exists
+ * @property {number} [cadrM3h] - Clean Air Delivery Rate in m³/h
+ */
+
+/**
+ * @typedef {Object} HomeProfile
+ * @property {HomeType} type - Dwelling type
+ * @property {HomeTightness} tightness - Air leakage level
+ * @property {WindowHabit} windowsUsually - Typical window habit
+ * @property {CookingFuel} cookingFuel - Primary cooking fuel
+ * @property {HeatingType} heating - Space heating type
+ * @property {PurifierSpecs} purifier - Purifier specs
+ * @property {number} [roomVolumeM3] - Primary room volume in m³
+ */
+
+/**
+ * @typedef {Object} LifestyleProfile
+ * @property {CommuteEntry[]} commute - Commute items
+ * @property {string[]} vehicles - Vehicle types owned
+ * @property {BudgetBand} budgetBand - Willingness to spend
+ * @property {string} [schoolStart] - School morning time "HH:MM"
+ * @property {string} [workStart] - Work start time "HH:MM"
+ * @property {string} [exercisePreference] - "morning" | "evening" | "none"
+ */
+
+/**
+ * @typedef {Object} AdoptedAction
+ * @property {string} actionId - Action identifier
+ * @property {string} since - ISO date string
+ */
+
+/**
+ * @typedef {Object} LoggedWin
+ * @property {string} id - Win entry identifier
+ * @property {string} text - Description of win
+ * @property {string} date - ISO date string
+ */
+
+/**
  * @typedef {Object} HouseholdProfile
  * @property {number} schemaVersion - Profile schema version
  * @property {LanguageCode} language - UI language
  * @property {string} units - Measurement units ("metric")
- * @property {Object} location
- * @property {string} location.name - City/area name
- * @property {number} location.lat - Latitude (rounded)
- * @property {number} location.lon - Longitude (rounded)
- * @property {string} location.timezone - Timezone name
- * @property {Object} household
- * @property {HouseholdMember[]} household.members - Household members
- * @property {Object} home
- * @property {HomeType} home.type - Dwelling type
- * @property {HomeTightness} home.tightness - Air leakage level
- * @property {WindowHabit} home.windowsUsually - Typical window habit
- * @property {CookingFuel} home.cookingFuel - Primary cooking fuel
- * @property {HeatingType} home.heating - Space heating type
- * @property {{ has: boolean, cadrM3h?: number }} home.purifier - Purifier specs
- * @property {number} [home.roomVolumeM3] - Primary room volume in m³
- * @property {Object} lifestyle
- * @property {CommuteEntry[]} lifestyle.commute - Commute items
- * @property {string[]} lifestyle.vehicles - Vehicle types owned
- * @property {BudgetBand} lifestyle.budgetBand - Willingness to spend
- * @property {string} [lifestyle.schoolStart] - School morning time "HH:MM"
- * @property {string} [lifestyle.workStart] - Work start time "HH:MM"
- * @property {string} [lifestyle.exercisePreference] - "morning" | "evening" | "none"
- * @property {Array<{ actionId: string, since: string }>} adoptedActions
+ * @property {LocationProfile} location
+ * @property {HouseholdGroup} household
+ * @property {HomeProfile} home
+ * @property {LifestyleProfile} lifestyle
+ * @property {AdoptedAction[]} adoptedActions
  * @property {string[]} reminders
- * @property {Array<{ id: string, text: string, date: string }>} loggedWins
+ * @property {LoggedWin[]} loggedWins
  * @property {boolean} [isDemo] - Whether demo mode is active
  */
 
@@ -146,12 +185,16 @@
  */
 
 /**
+ * @typedef {Object} EmissionsEstimate
+ * @property {ImpactRange} [co2e] - CO2e reduction in kg
+ * @property {ImpactRange} [pm] - PM reduction in g
+ * @property {string} [direction] - "lower" if unquantified
+ */
+
+/**
  * @typedef {Object} ImpactEstimate
  * @property {ImpactRange} exposureChange - Reduction in exposure (positive = reduction)
- * @property {Object} [emissionsChange] - Avoided emissions
- * @property {ImpactRange} [emissionsChange.co2e] - CO2e reduction in kg
- * @property {ImpactRange} [emissionsChange.pm] - PM reduction in g
- * @property {string} [emissionsChange.direction] - "lower" if unquantified
+ * @property {EmissionsEstimate} [emissionsChange] - Avoided emissions
  * @property {string[]} assumptions - Plain-language list of assumptions
  * @property {ConfidenceLevel} confidence - Confidence grade
  */

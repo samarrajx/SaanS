@@ -15,13 +15,17 @@ const CATEGORY_ICONS = {
 };
 
 /**
+ * @typedef {Object} ChipOptions
+ * @property {string} label - Display text
+ * @property {import("../types.js").AQICategory | string} [category] - CPCB category
+ * @property {string} [icon] - Optional explicit icon
+ * @property {string} [title] - Hover/accessibility description
+ */
+
+/**
  * Creates an accessible badge/chip DOM element.
  *
- * @param {Object} options
- * @param {string} options.label - Display text
- * @param {import("../types.js").AQICategory | string} [options.category] - CPCB category
- * @param {string} [options.icon] - Optional explicit icon
- * @param {string} [options.title] - Hover/accessibility description
+ * @param {ChipOptions} options
  * @returns {HTMLSpanElement}
  */
 export function createChip({ label, category, icon, title }) {

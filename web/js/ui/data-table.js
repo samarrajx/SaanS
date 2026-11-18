@@ -4,13 +4,17 @@
  */
 
 /**
+ * @typedef {Object} DataTableOptions
+ * @property {string[]} headers - Column header titles
+ * @property {Array<Array<string | number | HTMLElement>>} rows - Row cell contents
+ * @property {string} [caption] - Table summary description
+ * @property {string} [className=""]
+ */
+
+/**
  * Creates an accessible data table.
  *
- * @param {Object} options
- * @param {string[]} options.headers - Column header titles
- * @param {Array<Array<string | number | HTMLElement>>} options.rows - Row cell contents
- * @param {string} [options.caption] - Table summary description
- * @param {string} [options.className=""]
+ * @param {DataTableOptions} options
  * @returns {HTMLTableElement}
  */
 export function createDataTable({ headers, rows, caption, className = "" }) {

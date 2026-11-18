@@ -83,16 +83,20 @@ function buildActionFooter({
 }
 
 /**
+ * @typedef {Object} ActionCardOptions
+ * @property {import("../types.js").ActionDefinition} action
+ * @property {import("../types.js").HouseholdProfile} profile
+ * @property {number[]} [outdoorPm25]
+ * @property {boolean} isAdopted
+ * @property {string} [adoptLabel]
+ * @property {string} [unadoptLabel]
+ * @property {() => void} onToggleAdopt
+ */
+
+/**
  * Creates an accessible action card with Why This modal and adopt toggle.
  *
- * @param {Object} options
- * @param {import("../types.js").ActionDefinition} options.action
- * @param {import("../types.js").HouseholdProfile} options.profile
- * @param {number[]} [options.outdoorPm25]
- * @param {boolean} options.isAdopted
- * @param {string} [options.adoptLabel]
- * @param {string} [options.unadoptLabel]
- * @param {() => void} options.onToggleAdopt
+ * @param {ActionCardOptions} options
  * @returns {HTMLElement}
  */
 export function createActionCard({

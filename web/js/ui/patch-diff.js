@@ -38,10 +38,14 @@ function wirePatchButtons(applyBtn, undoBtn, patch, profile) {
 }
 
 /**
+ * @typedef {Object} PatchDiffOptions
+ * @property {{ op: string, value?: unknown }} patch
+ * @property {import("../types.js").HouseholdProfile} profile
+ */
+
+/**
  * Creates an accessible diff card with Apply and Undo actions.
- * @param {Object} options
- * @param {{ op: string, value?: unknown }} options.patch
- * @param {import("../types.js").HouseholdProfile} options.profile
+ * @param {PatchDiffOptions} options
  * @returns {HTMLDivElement}
  */
 export function createPatchDiffBox({ patch, profile }) {

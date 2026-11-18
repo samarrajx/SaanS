@@ -62,16 +62,26 @@ function attachHelpText(container, inputEl, id, helpText) {
 }
 
 /**
+ * @typedef {Object} FormFieldSelectOption
+ * @property {string} label
+ * @property {string} value
+ */
+
+/**
+ * @typedef {Object} FormFieldOptions
+ * @property {string} id - HTML ID
+ * @property {string} label - Label text
+ * @property {"text" | "number" | "select" | "checkbox"} [type="text"]
+ * @property {string | number | boolean} [value] - Initial value
+ * @property {FormFieldSelectOption[]} [options] - Select options
+ * @property {string} [helpText] - Explanatory hint
+ * @property {(val: string) => void} [onChange]
+ */
+
+/**
  * Creates an input, select, or checkbox form field.
  *
- * @param {Object} options
- * @param {string} options.id - HTML ID
- * @param {string} options.label - Label text
- * @param {"text" | "number" | "select" | "checkbox"} [options.type="text"]
- * @param {string | number | boolean} [options.value] - Initial value
- * @param {Array<{ label: string, value: string }>} [options.options] - Select options
- * @param {string} [options.helpText] - Explanatory hint
- * @param {(val: string) => void} [options.onChange]
+ * @param {FormFieldOptions} options
  * @returns {HTMLDivElement}
  */
 export function createFormField({
