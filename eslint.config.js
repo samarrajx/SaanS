@@ -74,7 +74,7 @@ export default [
           skipComments: true,
         },
       ],
-      complexity: ["error", 10],
+      complexity: ["error", 8],
       "max-lines-per-function": [
         "error",
         {

@@ -4,6 +4,18 @@
  */
 
 /**
+ * Checks if HEPA purifier action is applicable to household profile.
+ * @param {import("../types.js").HouseholdProfile} p
+ * @returns {boolean}
+ */
+function isHepaPurifierApplicable(p) {
+  const home = p?.home;
+  if (home?.purifier?.has) return true;
+  const band = p?.lifestyle?.budgetBand;
+  return band === "medium" || band === "high";
+}
+
+/**
  * Action catalog definitions.
  * @type {Array<import("../types.js").ActionDefinition & { costNumeric: number, title: string, description: string }>}
  */
@@ -88,12 +100,7 @@ export const ACTIONS_CATALOG = [
     effort: "low",
     evidenceTier: "established",
     sourceCitation: "AHAM AC-1 / EPA Residential Air Cleaners",
-    isApplicable: (p) =>
-      Boolean(
-        p?.home?.purifier?.has ||
-        p?.lifestyle?.budgetBand === "medium" ||
-        p?.lifestyle?.budgetBand === "high"
-      ),
+    isApplicable: (p) => isHepaPurifierApplicable(p),
   },
   {
     id: "weatherstrip_windows",

@@ -88,6 +88,33 @@ async function callWithTimeout(ai, model, contents, config, timeoutMs = REQUEST_
 }
 
 /**
+ * Builds Gemini generation config.
+ * @param {number} maxTokens
+ * @param {string} [systemInstruction]
+ * @param {boolean} [jsonMode]
+ * @returns {Record<string, unknown>}
+ */
+function buildGenConfig(maxTokens, systemInstruction, jsonMode) {
+  /** @type {Record<string, unknown>} */
+  const config = { maxOutputTokens: maxTokens };
+  if (systemInstruction) config.systemInstruction = systemInstruction;
+  if (jsonMode) config.responseMimeType = "application/json";
+  return config;
+}
+
+/**
+ * Safely extracts text from Gemini response.
+ * @param {unknown} res
+ * @returns {string | null}
+ */
+function extractResultText(res) {
+  if (!res) return null;
+  const anyRes = /** @type {{ text?: string | (() => string) }} */ (res);
+  const text = typeof anyRes.text === "function" ? anyRes.text() : anyRes.text;
+  return text || null;
+}
+
+/**
  * Executes a Gemini model call with system instruction and JSON output.
  * Falls back safely to null if API key is missing or call fails.
  *
@@ -114,24 +141,10 @@ export function generateGroundedContent({
   if (!ai) return Promise.resolve(null);
 
   const model = getModelName();
-  /** @type {Record<string, unknown>} */
-  const config = {
-    maxOutputTokens: maxTokens,
-  };
-
-  if (systemInstruction) {
-    config.systemInstruction = systemInstruction;
-  }
-  if (jsonMode) {
-    config.responseMimeType = "application/json";
-  }
+  const config = buildGenConfig(maxTokens, systemInstruction, jsonMode);
 
   return callWithTimeout(ai, model, prompt, config, timeoutMs)
-    .then((res) => {
-      if (!res) return null;
-      const text = typeof res.text === "function" ? res.text() : res.text;
-      return text || null;
-    })
+    .then(extractResultText)
     .catch((err) => {
       // Intentionally do not log prompt or user details
       console.warn("Gemini call failed or timed out:", err?.message || "error");

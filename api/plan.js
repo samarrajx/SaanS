@@ -24,34 +24,41 @@ const PlanRequestSchema = z.object({
 });
 
 /**
+ * Maps raw Open-Meteo JSON to HourlySeries structure.
+ * @param {{ hourly?: { time?: string[], pm2_5?: number[], pm10?: number[] } }} json
+ * @returns {import("../web/js/types.js").HourlySeries}
+ */
+function parseAirJson(json) {
+  const hourly = json?.hourly;
+  return {
+    times: hourly?.time || [],
+    pm25: hourly?.pm2_5 || [],
+    pm10: hourly?.pm10 || [],
+    meta: {
+      model: "CAMS ENSEMBLE",
+      resolutionNote: "Area model estimate (~25-45 km)",
+      fetchedAt: new Date().toISOString(),
+      attribution: "CAMS ENSEMBLE data provider and Open-Meteo (CC BY 4.0)",
+    },
+  };
+}
+
+/**
  * Fetches server-verified air quality data.
  * @param {number} lat
  * @param {number} lon
  * @returns {Promise<import("../web/js/types.js").HourlySeries>}
  */
 async function getVerifiedAirData(lat, lon) {
-  const url = new URL("https://air-quality-api.open-meteo.com/v1/air-quality");
-  url.searchParams.set("latitude", (Math.round(lat * 100) / 100).toString());
-  url.searchParams.set("longitude", (Math.round(lon * 100) / 100).toString());
-  url.searchParams.set("hourly", "pm2_5,pm10");
-  url.searchParams.set("timezone", "auto");
-  url.searchParams.set("forecast_days", "5");
+  const latR = (Math.round(lat * 100) / 100).toString();
+  const lonR = (Math.round(lon * 100) / 100).toString();
+  const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latR}&longitude=${lonR}&hourly=pm2_5,pm10&timezone=auto&forecast_days=5`;
 
   try {
-    const res = await fetch(url.toString(), { signal: AbortSignal.timeout(6000) });
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
     if (!res.ok) throw new Error("Upstream error");
     const json = await res.json();
-    return {
-      times: json.hourly?.time || [],
-      pm25: json.hourly?.pm2_5 || [],
-      pm10: json.hourly?.pm10 || [],
-      meta: {
-        model: "CAMS ENSEMBLE",
-        resolutionNote: "Area model estimate (~25-45 km)",
-        fetchedAt: new Date().toISOString(),
-        attribution: "CAMS ENSEMBLE data provider and Open-Meteo (CC BY 4.0)",
-      },
-    };
+    return parseAirJson(json);
   } catch {
     // If upstream network fails, use simulated Patna severe curve as fallback
     return getSimulatedScenario("PATNA_SEVERE");

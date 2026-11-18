@@ -19,23 +19,29 @@ const ATTRIBUTION_TEXT = "CAMS ENSEMBLE data provider and Open-Meteo (CC BY 4.0)
 const RESOLUTION_NOTE = "Area model estimate (~25-45 km), not a street-level monitor reading";
 
 /**
+ * Rounds a single numeric pollutant value.
+ * @param {unknown} v
+ * @returns {number}
+ */
+function roundPollutant(v) {
+  return typeof v === "number" ? Math.round(v * 10) / 10 : 0;
+}
+
+/**
  * Normalizes Open-Meteo upstream JSON to Saans HourlySeries structure.
  * @param {{ hourly?: { time?: string[], pm2_5?: unknown[], pm10?: unknown[] } } | null | undefined} raw
  * @returns {import("../web/js/types.js").HourlySeries}
  */
 function normalizeUpstreamAir(raw) {
-  const times = raw?.hourly?.time || [];
-  const pm25 = raw?.hourly?.pm2_5 || [];
-  const pm10 = raw?.hourly?.pm10 || [];
+  const hourly = raw?.hourly;
+  const times = hourly?.time || [];
+  const pm25 = hourly?.pm2_5 || [];
+  const pm10 = hourly?.pm10 || [];
 
   return {
     times,
-    pm25: pm25.map((/** @type {unknown} */ v) =>
-      typeof v === "number" ? Math.round(v * 10) / 10 : 0
-    ),
-    pm10: pm10.map((/** @type {unknown} */ v) =>
-      typeof v === "number" ? Math.round(v * 10) / 10 : 0
-    ),
+    pm25: pm25.map(roundPollutant),
+    pm10: pm10.map(roundPollutant),
     meta: {
       model: "CAMS ENSEMBLE",
       resolutionNote: RESOLUTION_NOTE,

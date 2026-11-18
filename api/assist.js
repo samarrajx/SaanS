@@ -27,22 +27,41 @@ function sanitizeProposedPatch(patch) {
 }
 
 /**
+ * Summarizes home fuel and purifier status.
+ * @param {Record<string, unknown> | undefined} home
+ * @returns {string}
+ */
+function resolveHomeSummary(home) {
+  const fuel = typeof home?.cookingFuel === "string" ? home.cookingFuel : "unknown";
+  const purifierObj = /** @type {{ has?: boolean } | undefined} */ (home?.purifier);
+  const purifier = purifierObj?.has ? "Yes" : "No";
+  return `Cooking fuel: ${fuel}, Purifier: ${purifier}`;
+}
+
+/**
+ * Summarizes profile context for the assist prompt.
+ * @param {Record<string, unknown> | null | undefined} profile
+ * @returns {string}
+ */
+function describeProfileContext(profile) {
+  const homeSum = resolveHomeSummary(
+    /** @type {Record<string, unknown> | undefined} */ (profile?.home)
+  );
+  const lifestyle = /** @type {Record<string, unknown> | undefined} */ (profile?.lifestyle);
+  const budget = typeof lifestyle?.budgetBand === "string" ? lifestyle.budgetBand : "standard";
+  return `${homeSum}, Budget: ${budget}`;
+}
+
+/**
  * Builds user context prompt with XML escaping for data boundary.
  * @param {string} userMessage
  * @param {Record<string, unknown> | null | undefined} profile
  * @returns {string}
  */
 function buildAssistPrompt(userMessage, profile) {
-  const home = /** @type {Record<string, unknown> | undefined} */ (profile?.home);
-  const fuel = typeof home?.cookingFuel === "string" ? home.cookingFuel : "unknown";
-  const purifierObj = /** @type {{ has?: boolean } | undefined} */ (home?.purifier);
-  const hasPurifier = Boolean(purifierObj?.has);
-  const purifier = hasPurifier ? "Yes" : "No";
-  const lifestyle = /** @type {Record<string, unknown> | undefined} */ (profile?.lifestyle);
-  const budget = typeof lifestyle?.budgetBand === "string" ? lifestyle.budgetBand : "standard";
+  const ctx = describeProfileContext(profile);
   const cleanMsg = userMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  return `User profile context:\nCooking fuel: ${fuel}, Purifier: ${purifier}, Budget: ${budget}\n\n<user_message>\n${cleanMsg}\n</user_message>`;
+  return `User profile context:\n${ctx}\n\n<user_message>\n${cleanMsg}\n</user_message>`;
 }
 
 /**

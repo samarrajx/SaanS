@@ -53,12 +53,11 @@ export function resolvePenetration(tightness, tier = "central") {
  * @returns {number}
  */
 export function resolveRoomVolume(profile, tier = "central") {
-  if (profile?.home?.roomVolumeM3 && profile.home.roomVolumeM3 > 0) {
-    return profile.home.roomVolumeM3;
-  }
-  const type = profile?.home?.type || "flat";
-  const param = DEFAULT_ROOM_VOLUME[type] || DEFAULT_ROOM_VOLUME.flat;
-  return param[tier];
+  const home = profile?.home;
+  const customVol = home?.roomVolumeM3;
+  if (customVol && customVol > 0) return customVol;
+  const type = home?.type === "house" ? "house" : "flat";
+  return DEFAULT_ROOM_VOLUME[type][tier];
 }
 
 /**
@@ -195,6 +194,15 @@ function resolveWindowHabit(overrides, profile) {
 }
 
 /**
+ * Determines if a given hour is an indoor cooking meal hour.
+ * @param {number} hour
+ * @returns {boolean}
+ */
+function isMealHour(hour) {
+  return hour === 8 || hour === 13 || hour === 20;
+}
+
+/**
  * Simulates 24 hours of indoor PM2.5 based on outdoor diurnal series and household profile.
  *
  * @param {number[]} hourlyOutdoorPm - 24 hourly outdoor PM2.5 values
@@ -226,8 +234,7 @@ export function simulateIndoorSeries(hourlyOutdoorPm, profile, overrides = {}, t
 
   for (let hour = 0; hour < 24; hour++) {
     const outdoor = hourlyOutdoorPm[hour] || 0;
-    const isMealHour = hour === 8 || hour === 13 || hour === 20;
-    const hourlySource = isMealHour ? source : 0;
+    const hourlySource = isMealHour(hour) ? source : 0;
     currentC = stepIndoorPm({
       currentIndoor: currentC,
       outdoorPm: outdoor,

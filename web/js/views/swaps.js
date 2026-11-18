@@ -22,6 +22,22 @@ const SWAP_IDS = [
 ];
 
 /**
+ * Accumulates metrics from a single adopted action.
+ * @param {import("../types.js").ActionDefinition} act
+ * @param {import("../types.js").HouseholdProfile} profile
+ * @param {number[]} pm25Series
+ * @returns {{ co2e: number, pmG: number, exposure: number | null }}
+ */
+function getActionImpactMetrics(act, profile, pm25Series) {
+  const imp = estimateImpact(act, profile, pm25Series);
+  const em = imp.emissionsChange;
+  const co2e = em?.co2e ? em.co2e.central : 0;
+  const pmG = em?.pm ? em.pm.central : 0;
+  const exposure = imp.exposureChange ? imp.exposureChange.central : null;
+  return { co2e, pmG, exposure };
+}
+
+/**
  * Calculates cumulative weekly impact from adopted actions.
  * @param {string[]} adoptedIds
  * @param {import("../types.js").HouseholdProfile} profile
@@ -36,15 +52,11 @@ function calculateLedger(adoptedIds, profile, pm25Series) {
   adoptedIds.forEach((id) => {
     const act = ACTIONS_CATALOG.find((a) => a.id === id);
     if (!act) return;
-    const imp = estimateImpact(act, profile, pm25Series);
-    if (imp.emissionsChange?.co2e) {
-      avoidedCo2e += imp.emissionsChange.co2e.central || 0;
-    }
-    if (imp.emissionsChange?.pm) {
-      avoidedPmG += imp.emissionsChange.pm.central || 0;
-    }
-    if (imp.exposureChange?.central) {
-      exposureReductions.push(imp.exposureChange.central);
+    const metrics = getActionImpactMetrics(act, profile, pm25Series);
+    avoidedCo2e += metrics.co2e;
+    avoidedPmG += metrics.pmG;
+    if (metrics.exposure !== null) {
+      exposureReductions.push(metrics.exposure);
     }
   });
 

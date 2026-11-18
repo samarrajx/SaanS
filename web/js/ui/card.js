@@ -14,6 +14,22 @@
  */
 
 /**
+ * Builds card body container.
+ * @param {HTMLElement | HTMLElement[]} content
+ * @returns {HTMLDivElement}
+ */
+function buildCardBody(content) {
+  const body = document.createElement("div");
+  body.className = "ui-card-body";
+  if (Array.isArray(content)) {
+    for (const el of content) body.appendChild(el);
+  } else {
+    body.appendChild(content);
+  }
+  return body;
+}
+
+/**
  * Creates an accessible UI card element.
  *
  * @param {CardOptions} options
@@ -39,14 +55,7 @@ export function createCard({ title, subtitle, content, footer, className = "", a
   }
 
   if (content) {
-    const body = document.createElement("div");
-    body.className = "ui-card-body";
-    if (Array.isArray(content)) {
-      for (const el of content) body.appendChild(el);
-    } else {
-      body.appendChild(content);
-    }
-    card.appendChild(body);
+    card.appendChild(buildCardBody(content));
   }
 
   if (footer) {
