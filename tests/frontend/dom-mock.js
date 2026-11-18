@@ -14,7 +14,8 @@ class MockElement {
     this.children = [];
     /** @type {MockElement | null} */
     this.parentNode = null;
-    this.textContent = "";
+    /** @type {string} */
+    this._textContent = "";
     this.className = "";
     this.style = {};
     this.id = "";
@@ -119,37 +120,84 @@ class MockElement {
     }
   }
 
+  get textContent() {
+    const own = this._textContent || "";
+    if (this.children.length === 0) return own;
+    const childText = this.children.map((c) => c.textContent).join(" ");
+    return (own + " " + childText).trim();
+  }
+
+  /** @param {string} val */
+  set textContent(val) {
+    this._textContent = val;
+  }
+
+  click() {
+    this.dispatchEvent("click");
+  }
+
   focus() {}
+}
+
+/**
+ * Sets up global mock window, localStorage and URL utilities.
+ * @returns {{ store: Map<string, string> }}
+ */
+function setupMockWindow() {
+  /** @type {Map<string, string>} */
+  const store = new Map();
+  /** @type {any} */ (globalThis).window = {
+    localStorage: {
+      /** @param {string} k */
+      getItem: (k) => store.get(k) || null,
+      /** @param {string} k @param {string} v */
+      setItem: (k, v) => store.set(k, v),
+      /** @param {string} k */
+      removeItem: (k) => store.delete(k),
+      clear: () => store.clear(),
+    },
+    location: { hash: "" },
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  };
+
+  /** @type {any} */ (globalThis).URL = {
+    createObjectURL: () => "blob:mock-url",
+    revokeObjectURL: () => {},
+  };
+
+  /** @type {any} */ (globalThis).Blob = class MockBlob {
+    /** @param {any[]} parts @param {any} [options] */
+    constructor(parts, options) {
+      this.parts = parts;
+      this.options = options;
+    }
+  };
+
+  return { store };
 }
 
 export function setupMockDom() {
   const body = new MockElement("body");
+  /** @type {Map<string, MockElement>} */
+  const elementRegistry = new Map();
+
   const doc = {
     body,
     documentElement: new MockElement("html"),
-    /**
-     * @param {string} tag
-     * @returns {MockElement}
-     */
+    /** @param {string} tag */
     createElement: (tag) => new MockElement(tag),
-    /**
-     * @param {string} _ns
-     * @param {string} tag
-     * @returns {MockElement}
-     */
+    /** @param {string} _ns @param {string} tag */
     createElementNS: (_ns, tag) => new MockElement(tag),
-    /**
-     * @param {string} id
-     * @returns {MockElement | null}
-     */
-    getElementById: (id) => (id === "app-announcer" ? new MockElement("div") : null),
-    /**
-     * @param {string} _sel
-     * @returns {MockElement[]}
-     */
+    /** @param {string} id */
+    getElementById: (id) =>
+      elementRegistry.get(id) || (id === "app-announcer" ? new MockElement("div") : null),
+    /** @param {string} _sel */
     querySelectorAll: (_sel) => [],
     addEventListener: () => {},
   };
+
+  const { store } = setupMockWindow();
 
   /** @type {any} */ (globalThis).document = doc;
   /** @type {any} */ (globalThis).HTMLElement = MockElement;
@@ -161,4 +209,6 @@ export function setupMockDom() {
   /** @type {any} */ (globalThis).HTMLInputElement = MockElement;
   /** @type {any} */ (globalThis).HTMLSelectElement = MockElement;
   /** @type {any} */ (globalThis).SVGSVGElement = MockElement;
+
+  return { elementRegistry, store };
 }

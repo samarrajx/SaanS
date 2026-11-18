@@ -134,6 +134,7 @@
  * @property {Array<{ actionId: string, since: string }>} adoptedActions
  * @property {string[]} reminders
  * @property {Array<{ id: string, text: string, date: string }>} loggedWins
+ * @property {boolean} [isDemo] - Whether demo mode is active
  */
 
 /**

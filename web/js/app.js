@@ -1,37 +1,101 @@
 /**
- * @fileoverview Main frontend entry point for Saans.
+ * @fileoverview Main Frontend Application Entry Point for Saans.
+ * Initializes navigation shell, demo mode toggle, and hash routing.
  */
 
-// Application startup state
-export const APP_NAME = "Saans"; // Clean-air assistant name
-export const APP_VERSION = "1.0.0"; // Semantic version
+import { initRouter, navigateTo } from "./router.js";
+import { loadProfile, saveProfile } from "./storage.js";
+import { getLocale } from "./locales/index.js";
+import { announce } from "./ui/announcer.js";
+
+export const APP_NAME = "Saans";
+
+const NAV_ITEMS = [
+  { id: "today", label: "Today", icon: "📊" },
+  { id: "plan", label: "Day Plan", icon: "🕒" },
+  { id: "lab", label: "Home Air Lab", icon: "🧪" },
+  { id: "swaps", label: "Swaps", icon: "🔄" },
+  { id: "community", label: "Community", icon: "🏘️" },
+  { id: "ask", label: "Ask", icon: "💬" },
+  { id: "settings", label: "Settings", icon: "⚙️" },
+];
 
 /**
- * Initializes the application shell and basic event listeners.
- * @returns {void}
+ * Builds and renders main navigation bar links.
+ * @param {HTMLElement} navElement
  */
-export function initApp() {
-  const container = document.getElementById("view-container");
-  if (container) {
-    const welcome = document.createElement("div");
-    welcome.className = "welcome-card";
-    welcome.setAttribute("role", "region");
-    welcome.setAttribute("aria-label", "Welcome");
+function renderNav(navElement) {
+  navElement.innerHTML = "";
+  const profile = loadProfile();
+  const t = getLocale(profile.language);
 
-    const heading = document.createElement("h1");
-    heading.textContent = `${APP_NAME} — Clean-Air Assistant`;
-    welcome.appendChild(heading);
+  NAV_ITEMS.forEach((item) => {
+    const link = document.createElement("a");
+    link.href = `#${item.id}`;
+    link.setAttribute("data-route", item.id);
+    const labelText = t[`nav${item.id.charAt(0).toUpperCase() + item.id.slice(1)}`] || item.label;
+    link.textContent = `${item.icon} ${labelText}`;
+    navElement.appendChild(link);
+  });
+}
 
-    const desc = document.createElement("p");
-    desc.textContent =
-      "Helping families and communities navigate severe smog and urban pollution with low-emission routines and verified indoor air strategies.";
-    welcome.appendChild(desc);
+/**
+ * Updates header demo mode status banner and buttons.
+ * @param {HTMLElement} statusElement
+ */
+export function updateHeaderStatus(statusElement) {
+  statusElement.innerHTML = "";
+  const profile = loadProfile();
 
-    container.appendChild(welcome);
+  if (profile.isDemo) {
+    const demoBadge = document.createElement("span");
+    demoBadge.className = "ui-chip chip-aqi-severe";
+    demoBadge.textContent = "⚡ Demo Mode";
+    statusElement.appendChild(demoBadge);
+
+    const exitBtn = document.createElement("button");
+    exitBtn.className = "ui-button secondary";
+    exitBtn.style.padding = "4px 8px";
+    exitBtn.style.fontSize = "0.75rem";
+    exitBtn.textContent = "Exit Demo";
+    exitBtn.addEventListener("click", () => {
+      profile.isDemo = false;
+      saveProfile(profile);
+      announce("Exited demo mode");
+      updateHeaderStatus(statusElement);
+      navigateTo("today");
+    });
+    statusElement.appendChild(exitBtn);
+  } else {
+    const demoBtn = document.createElement("button");
+    demoBtn.className = "ui-button secondary";
+    demoBtn.style.padding = "4px 8px";
+    demoBtn.style.fontSize = "0.75rem";
+    demoBtn.textContent = "Try Demo";
+    demoBtn.addEventListener("click", () => {
+      profile.isDemo = true;
+      saveProfile(profile);
+      announce("Entered Patna Severe Demo Mode");
+      updateHeaderStatus(statusElement);
+      navigateTo("today");
+    });
+    statusElement.appendChild(demoBtn);
   }
 }
 
-// Bootstrap when DOM is ready
+/**
+ * Bootstraps the application shell.
+ */
+export function initApp() {
+  const nav = document.getElementById("main-nav");
+  if (nav) renderNav(nav);
+
+  const statusHeader = document.getElementById("header-status");
+  if (statusHeader) updateHeaderStatus(statusHeader);
+
+  initRouter();
+}
+
 if (typeof document !== "undefined") {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initApp);
