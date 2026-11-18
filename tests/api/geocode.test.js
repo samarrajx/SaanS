@@ -34,6 +34,7 @@ test("GET /api/geocode validates method, origin, rate limits, and query length",
 });
 
 test("GET /api/geocode handles rate limiting when quota exceeded", async () => {
+  cache.setGeocode("delhi", []);
   const ip = "192.0.2.102";
   let lastStatus = 200;
   for (let i = 0; i < 70; i++) {

@@ -175,7 +175,7 @@ Where $I_j$ is the microenvironment inhalation rate ($m^3/h$) based on exertion 
 
 - **Zero Bundle Step**: Native ES Modules (`type="module"`), vanilla JavaScript, and CSS custom properties.
 - **Lightweight Inline SVG**: All charts are generated inline with semantic SVGs—no chart libraries required.
-- **Total Repository Footprint**: Entire repository is **179.34 KiB**, well below the 10 MB limit.
+- **Total Repository Footprint**: Entire repository is **~421 KiB**, well below the 10 MB limit.
 - **Server Caching**: 60-minute in-memory cache for weather and air quality grid cells.
 
 ---
@@ -185,10 +185,10 @@ Where $I_j$ is the microenvironment inhalation rate ($m^3/h$) based on exertion 
 All metrics below are generated directly by `npm run report` using Node.js built-in test runner (`node --test`) and code coverage tools.
 
 - **Node.js Version**: `v22.23.5`
-- **Total Tests**: `74`
-- **Passed**: `74`
+- **Total Tests**: `92`
+- **Passed**: `92`
 - **Failed**: `0`
-- **Aggregate Coverage**: Line: 94.30% | Branch: 79.15% | Function: 84.11%
+- **Aggregate Coverage**: Line: 95.56% | Branch: 84.97% | Function: 85.85%
 - **NPM Audit**: `0 vulnerabilities`
 - **TypeScript**: `0 errors` (`strict: true`, `checkJs: true`)
 - **ESLint**: `0 errors, 0 warnings` (Max 40 lines per function, max 250 lines per file)
@@ -197,31 +197,31 @@ All metrics below are generated directly by `npm run report` using Node.js built
 
 | Module / File                  | Line Coverage | Branch Coverage | Function Coverage |
 | :----------------------------- | :------------ | :-------------- | :---------------- |
-| `api/_lib/cache.js`            | 93.02%        | 85.71%          | 100.00%           |
-| `api/_lib/gemini.js`           | 60.20%        | 50.00%          | 33.33%            |
-| `api/_lib/security.js`         | 97.18%        | 84.00%          | 88.89%            |
+| `api/_lib/cache.js`            | 93.02%        | 84.62%          | 100.00%           |
+| `api/_lib/gemini.js`           | 100.00%       | 93.10%          | 100.00%           |
+| `api/_lib/security.js`         | 98.59%        | 93.10%          | 88.89%            |
 | `api/air.js`                   | 100.00%       | 68.00%          | 100.00%           |
-| `api/assist.js`                | 90.08%        | 35.29%          | 80.00%            |
-| `api/geocode.js`               | 95.60%        | 46.15%          | 100.00%           |
-| `api/notice.js`                | 91.67%        | 50.00%          | 100.00%           |
+| `api/assist.js`                | 100.00%       | 81.25%          | 100.00%           |
+| `api/geocode.js`               | 100.00%       | 83.33%          | 100.00%           |
+| `api/notice.js`                | 100.00%       | 95.00%          | 100.00%           |
 | `api/ping.js`                  | 100.00%       | 100.00%         | 100.00%           |
-| `api/plan.js`                  | 93.75%        | 57.14%          | 100.00%           |
+| `api/plan.js`                  | 100.00%       | 85.71%          | 100.00%           |
 | `web/js/engine/actions.js`     | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/assumptions.js` | 100.00%       | 100.00%         | 100.00%           |
-| `web/js/engine/baseline.js`    | 95.52%        | 61.54%          | 100.00%           |
+| `web/js/engine/baseline.js`    | 97.01%        | 73.33%          | 100.00%           |
 | `web/js/engine/breakpoints.js` | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/community.js`   | 100.00%       | 66.67%          | 100.00%           |
 | `web/js/engine/exposure.js`    | 100.00%       | 94.44%          | 100.00%           |
 | `web/js/engine/format.js`      | 100.00%       | 81.25%          | 100.00%           |
 | `web/js/engine/ics.js`         | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/impact.js`      | 100.00%       | 97.22%          | 100.00%           |
-| `web/js/engine/indoor.js`      | 98.10%        | 78.85%          | 100.00%           |
+| `web/js/engine/indoor.js`      | 98.10%        | 80.77%          | 100.00%           |
 | `web/js/engine/money.js`       | 98.44%        | 83.33%          | 100.00%           |
 | `web/js/engine/naqi.js`        | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/patch.js`       | 92.45%        | 71.79%          | 87.50%            |
 | `web/js/engine/rank.js`        | 100.00%       | 81.25%          | 100.00%           |
 | `web/js/engine/scenarios.js`   | 100.00%       | 87.50%          | 100.00%           |
-| `web/js/engine/schedule.js`    | 100.00%       | 81.82%          | 100.00%           |
+| `web/js/engine/schedule.js`    | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/locales/en.js`         | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/locales/hi.js`         | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/locales/hinglish.js`   | 100.00%       | 100.00%         | 100.00%           |
@@ -246,7 +246,7 @@ All metrics below are generated directly by `npm run report` using Node.js built
 | `web/js/views/settings.js`     | 85.77%        | 92.31%          | 64.71%            |
 | `web/js/views/swaps.js`        | 98.83%        | 77.27%          | 93.33%            |
 | `web/js/views/today.js`        | 93.07%        | 93.33%          | 84.62%            |
-| **all files**                  | 94.30%        | 79.15%          | 84.11%            |
+| **all files**                  | 95.56%        | 84.97%          | 85.85%            |
 
 ---
 
@@ -271,7 +271,7 @@ npm install
 npm run format:check   # Prettier check
 npm run lint           # ESLint with strict 40-line function limits
 npm run typecheck      # TypeScript in strict mode
-npm test               # Run all 74 unit & API tests
+npm test               # Run all 92 unit & API tests
 npm run report         # Full test and coverage report
 ```
 
