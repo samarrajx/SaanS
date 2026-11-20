@@ -70,16 +70,17 @@ async function extractPayload(req, getQuery) {
 /**
  * Creates a standard serverless API route handler.
  *
+ * @template {Record<string, unknown>} T
  * @param {Object} config
  * @param {string[]} config.methods
- * @param {import("zod").ZodTypeAny} [config.schema]
+ * @param {import("zod").ZodType<T>} [config.schema]
  * @param {string} [config.schemaErrorMessage]
  * @param {number} [config.rateLimit]
  * @param {(req: import("http").IncomingMessage) => Record<string, unknown>} [config.getQuery]
  * @param {(context: {
  *   req: import("http").IncomingMessage,
  *   res: import("http").ServerResponse,
- *   data: any
+ *   data: T
  * }) => Promise<void> | void} config.run
  * @returns {(req: import("http").IncomingMessage, res: import("http").ServerResponse) => Promise<void>}
  */
@@ -105,6 +106,6 @@ export function createHandler(config) {
       validData = parsed.data;
     }
 
-    await run({ req, res, data: validData });
+    await run({ req, res, data: /** @type {T} */ (validData) });
   };
 }

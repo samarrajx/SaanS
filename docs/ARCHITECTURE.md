@@ -148,10 +148,9 @@ The codebase is organized into zero-dependency, cohesive single-responsibility m
 │       ├── engine/          # Deterministic physics, NAQI calculation, scheduling
 │       ├── locales/         # i18n dictionaries (en, hi, hinglish)
 │       ├── ui/              # Semantic WAI-ARIA UI primitives
-│       │   ├── chart-utils.js # Shared SVG chart container & data table toggle
-│       │   ├── chart-line.js  # Diurnal PM2.5 vector line chart
-│       │   ├── chart-bars.js  # Comparative metric bar chart
-│       │   └── ...            # card, chip, modal, tabs, form-field, etc.
+│       │   ├── chart-utils.js  # Shared SVG chart container & data table toggle
+│       │   ├── chart-line.js   # Diurnal PM2.5 vector line chart
+│       │   └── ...             # card, chip, modal, tabs, form-field, etc.
 │       ├── views/           # Application route view controllers
 │       ├── app.js           # Main application bootstrap
 │       ├── router.js        # Zero-dependency hash router

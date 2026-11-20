@@ -10,7 +10,6 @@ const { createFormField } = await import("../../web/js/ui/form-field.js");
 const { createDataTable } = await import("../../web/js/ui/data-table.js");
 const { createInlineForm } = await import("../../web/js/ui/inline-form.js");
 const { createLineChart } = await import("../../web/js/ui/chart-line.js");
-const { createBarChart } = await import("../../web/js/ui/chart-bars.js");
 const { createTabs } = await import("../../web/js/ui/tabs.js");
 
 test("characterisation: createCard structure and attributes", () => {
@@ -148,7 +147,7 @@ test("characterisation: createTabs structure and attributes", () => {
   assert.equal(tabPanel.children[0].textContent, "Panel 1");
 });
 
-test("characterisation: createLineChart and createBarChart structure", () => {
+test("characterisation: createLineChart structure", () => {
   const lineChart = createLineChart({
     title: "Diurnal Line",
     series: [{ name: "PM", values: [100, 150], color: "#ef4444" }],
@@ -160,23 +159,4 @@ test("characterisation: createLineChart and createBarChart structure", () => {
   assert.equal(lineChart.children[0].children[0].textContent, "Diurnal Line (µg/m³)");
   assert.equal(lineChart.children[1].children[0].tagName, "SVG");
   assert.equal(lineChart.children[2].tagName, "TABLE");
-
-  const barChart = createBarChart({
-    title: "Cost Bar",
-    data: [{ label: "Mask", value: 50, color: "#0f766e", unit: "INR" }],
-  });
-  assert.equal(barChart.tagName, "DIV");
-  assert.equal(barChart.className, "ui-chart-container");
-  const bcHeader = barChart.children[0];
-  assert.equal(bcHeader.children[0].textContent, "Cost Bar");
-  const bcToggle = /** @type {any} */ (bcHeader.children[1]);
-  assert.equal(bcToggle.textContent, "View Table");
-  assert.equal(barChart.children[1].className, "chart-svg-wrap");
-  assert.equal(barChart.children[1].children[0].tagName, "SVG");
-  assert.equal(barChart.children[2].tagName, "TABLE");
-
-  bcToggle.click();
-  assert.equal(bcToggle.textContent, "View Chart");
-  bcToggle.click();
-  assert.equal(bcToggle.textContent, "View Table");
 });

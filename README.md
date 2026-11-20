@@ -193,7 +193,7 @@ All metrics below are generated directly by `npm run report` using Node.js built
 - **Total Tests**: `154`
 - **Passed**: `154`
 - **Failed**: `0`
-- **Aggregate Coverage**: Line: 97.81% | Branch: 90.99% | Function: 94.83%
+- **Aggregate Coverage**: Line: 97.75% | Branch: 91.13% | Function: 94.75%
 - **NPM Audit**: `0 vulnerabilities`
 - **TypeScript**: `0 errors` (`strict: true`, `checkJs: true`, zero `any`, zero `z.any()`)
 - **ESLint**: `0 errors, 0 warnings` (`--max-warnings=0`, max 40 lines/function, max 250 lines/file, complexity <= 8)
@@ -214,7 +214,7 @@ All metrics below are generated directly by `npm run report` using Node.js built
 | `api/plan.js`                  | 100.00%       | 78.57%          | 100.00%           |
 | `web/js/engine/actions.js`     | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/assumptions.js` | 100.00%       | 100.00%         | 100.00%           |
-| `web/js/engine/baseline.js`    | 100.00%       | 100.00%         | 100.00%           |
+| `web/js/engine/baseline.js`    | 98.51%        | 93.33%          | 100.00%           |
 | `web/js/engine/breakpoints.js` | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/community.js`   | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/engine/exposure.js`    | 100.00%       | 94.44%          | 100.00%           |
@@ -236,7 +236,6 @@ All metrics below are generated directly by `npm run report` using Node.js built
 | `web/js/ui/action-card.js`     | 100.00%       | 93.33%          | 100.00%           |
 | `web/js/ui/announcer.js`       | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/ui/card.js`            | 100.00%       | 100.00%         | 100.00%           |
-| `web/js/ui/chart-bars.js`      | 100.00%       | 66.67%          | 100.00%           |
 | `web/js/ui/chart-line.js`      | 100.00%       | 76.92%          | 100.00%           |
 | `web/js/ui/chart-utils.js`     | 100.00%       | 100.00%         | 100.00%           |
 | `web/js/ui/chip.js`            | 100.00%       | 100.00%         | 100.00%           |
@@ -254,14 +253,14 @@ All metrics below are generated directly by `npm run report` using Node.js built
 | `web/js/views/settings.js`     | 89.02%        | 82.35%          | 76.47%            |
 | `web/js/views/swaps.js`        | 100.00%       | 80.00%          | 100.00%           |
 | `web/js/views/today.js`        | 93.07%        | 93.33%          | 84.62%            |
-| **all files**                  | 97.81%        | 90.99%          | 94.83%            |
+| **all files**                  | 97.75%        | 91.13%          | 94.75%            |
 
 ### Code Quality & Virtual Evaluation Alignment
 
 - **Strict Static Typing**: Zero `any` and zero `z.any()` across the entire codebase (`api/` and `web/js/`). All serverless API payloads and engine functions utilize explicit Zod schemas or typed JSDoc contracts verified continuously via `tsc --noEmit` (`strict: true`, `checkJs: true`).
 - **Enforced Zero Warnings Linting**: Scoped ESLint 9 configuration separates browser and Node environments cleanly, enforcing `--max-warnings=0`.
 - **Architectural Guardrails**: All functions strictly $\le 40$ lines, files $\le 250$ lines, and cyclomatic complexity $\le 8$ with zero exceptions across the entire repository.
-- **High-Coverage Test Suite**: Comprehensive offline unit test suite featuring 154 passing tests with aggregate line coverage $\ge 97.8\%$, branch coverage $\ge 90.9\%$, and function coverage $\ge 94.8\%$.
+- **High-Coverage Test Suite**: Comprehensive offline unit test suite featuring 154 passing tests with aggregate line coverage $\ge 97\%$, branch coverage $\ge 90\%$, and function coverage $\ge 94\%$.
 - **Zero Regression Guarantee**: 100% preservation of all security protections (99), zero-bundle-overhead efficiency (100), full keyboard/ARIA accessibility (98), and grounded domain alignment (99).
 
 ---
